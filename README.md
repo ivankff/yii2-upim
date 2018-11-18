@@ -78,7 +78,7 @@ public function actions()
 }
 ```
 
-Backend model
+Backend form model
 ------------------------------
 ```php
 /**
