@@ -11,12 +11,10 @@ Application config
 ------------------------------
 ```php
 'components' => [
-    ...
     'image' => [
         'class' => 'yii\image\ImageDriver',
         'driver' => 'GD',  //GD or Imagick
     ],
-    ...
 ],
 ```
 
@@ -24,10 +22,8 @@ Application params
 ------------------------------
 ```php
 [
-    ...
     'images.widen' => 2000,
     'images.securityKey' => 'some.security.key',
-    ...
 ],
 ```
 
@@ -39,19 +35,16 @@ Active Record Entity
  */
 class Product extends ActiveRecord implements ImagesEntityInterface
 {
-...
 
     public function behaviors()
     {
         return [
-            ...
             'images' => [
                 'class' => 'ivankff\yii2UploadImages\EntityImagesBehavior',
                 'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
                 'dir' => static::getImagesDir(),
                 'widen' => static::getImagesWiden(),
             ],
-            ...
         ];
     }
     
@@ -61,7 +54,6 @@ class Product extends ActiveRecord implements ImagesEntityInterface
     /** @return int */
     public static function getImagesWiden() { return (int)ArrayHelper::getValue(Yii::$app->params, 'image.widen', 0); }
 
-...
 }
 ```
 
@@ -71,9 +63,7 @@ Backend controller
 public function actions()
 {
     return [
-        ...
         'delete-image' => 'ivankff\yii2UploadImages\DeleteImageAction',
-        ...
     ];
 }
 ```
@@ -91,8 +81,6 @@ class ProductForm extends Model {
     
     /** @var UploadedFile[] */
     public $dopImages;
-    
-    ...
     
     /**
      * {@inheritdoc}
@@ -171,7 +159,7 @@ echo $form->field($model, 'mainImage')->widget('ivankff\yii2UploadImages\FileInp
 ]);
 
 echo $form->field($model, 'dopImages[]')->widget('ivankff\yii2UploadImages\FileInputWidget', [
-    'options'=>[
+    'options' => [
         'multiple' => true,
     ],
     'pluginOptions' => [
@@ -201,8 +189,6 @@ class Router extends Component
 
     /** @var UrlManager */
     private $_backendManager;
-    
-    ...
     
     /**
      * @param Product $product
@@ -240,15 +226,15 @@ class Router extends Component
      * @param int $id
      * @param string $type
      * @param int|null $i
-     * @return ImageActionRequest
+     * @return \ivankff\yii2UploadImages\ImageActionRequest
      * @throws
      */
     private function _getImageRequest($params, $id, $type, $i = null)
     {
+        $params['class'] = 'ivankff\yii2UploadImages\ImageActionRequest';
         $params['type'] = $type;
         $params['id'] = $id;
         $params['i'] = $i;
-        $params['class'] = ImageActionRequest::class;
 
         return Yii::createObject($params);
     }
