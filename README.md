@@ -11,12 +11,12 @@ Application config
 ------------------------------
 ```php
 'components' => [
-	...
-	'image' => [
-		'class' => 'yii\image\ImageDriver',
-		'driver' => 'GD',  //GD or Imagick
-	],
-	...
+    ...
+    'image' => [
+        'class' => 'yii\image\ImageDriver',
+        'driver' => 'GD',  //GD or Imagick
+    ],
+    ...
 ],
 ```
 
@@ -24,10 +24,10 @@ Application params
 ------------------------------
 ```php
 [
-	...
-	'images.widen' => 2000,
-	'images.securityKey' => 'some.security.key',
-	...
+    ...
+    'images.widen' => 2000,
+    'images.securityKey' => 'some.security.key',
+    ...
 ],
 ```
 
@@ -41,25 +41,25 @@ class Product extends ActiveRecord implements ImagesEntityInterface
 {
 ...
 
-	public function behaviors()
-	{
-		return [
-			...
-			'images' => [
-				'class' => 'ivankff\yii2UploadImages\EntityImagesBehavior',
-				'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
-				'dir' => static::getImagesDir(),
-				'widen' => static::getImagesWiden(),
-			],
-			...
-		];
-	}
-	
-	/** @return string */
-	public static function getImagesDir() { return Yii::getAlias('@image/product'); }
+    public function behaviors()
+    {
+        return [
+            ...
+            'images' => [
+                'class' => 'ivankff\yii2UploadImages\EntityImagesBehavior',
+                'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
+                'dir' => static::getImagesDir(),
+                'widen' => static::getImagesWiden(),
+            ],
+            ...
+        ];
+    }
+    
+    /** @return string */
+    public static function getImagesDir() { return Yii::getAlias('@image/product'); }
 
-	/** @return int */
-	public static function getImagesWiden() { return (int)ArrayHelper::getValue(Yii::$app->params, 'image.widen', 0); }
+    /** @return int */
+    public static function getImagesWiden() { return (int)ArrayHelper::getValue(Yii::$app->params, 'image.widen', 0); }
 
 ...
 }
@@ -70,11 +70,11 @@ Backend controller
 ```php
 public function actions()
 {
-	return [
-		...
-		'delete-image' => 'ivankff\yii2UploadImages\DeleteImageAction',
-		...
-	];
+    return [
+        ...
+        'delete-image' => 'ivankff\yii2UploadImages\DeleteImageAction',
+        ...
+    ];
 }
 ```
 
@@ -86,67 +86,67 @@ Backend model
  */
 class ProductForm extends Model {
 
-	/** @var UploadedFile */
-	public $mainImage;
-	
-	/** @var UploadedFile[] */
-	public $dopImages;
-	
-	...
-	
-	/**
-	 * {@inheritdoc}
-	 */
-	public function behaviors()
-	{
-		return [
-			'upload' => [
-				'class' => 'backend\images\UploadBehavior',
-				'single' => [
-					'mainImage' => $this->_ar->images->getMain(),
-					'dopImages' => $this->_ar->images->getDop(),
-				],
-			],
-		];
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function rules()
-	{
-		return [
-			[['mainImage_keys', 'dopImages_keys'], 'string'],
-			[['mainImage'], 'image'],
-			[['dopImages'], 'image', 'maxFiles' => 10],
-		];
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function attributeLabels()
-	{
-		return [
-			'mainImage' => 'Основное изображение',
-			'dopImages' => 'Дополнительные изображения',
-		];
-	}
-
-	/**
-	 * @param bool $runValidation
-	 * @return bool
-	 */
-	public function save($runValidation = true)
+    /** @var UploadedFile */
+    public $mainImage;
+    
+    /** @var UploadedFile[] */
+    public $dopImages;
+    
+    ...
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
     {
-		if ($runValidation && !$this->validate())
-			return false;
+        return [
+            'upload' => [
+                'class' => 'backend\images\UploadBehavior',
+                'single' => [
+                    'mainImage' => $this->_ar->images->getMain(),
+                    'dopImages' => $this->_ar->images->getDop(),
+                ],
+            ],
+        ];
+    }
 
-		$this->product->replaceMainImage($this->getFiles('mainImage'));
-		$this->product->replaceDopImages($this->getFiles('dopImages'));
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        return [
+            [['mainImage_keys', 'dopImages_keys'], 'string'],
+            [['mainImage'], 'image'],
+            [['dopImages'], 'image', 'maxFiles' => 10],
+        ];
+    }
 
-		return $this->product->save($runValidation);
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'mainImage' => 'Основное изображение',
+            'dopImages' => 'Дополнительные изображения',
+        ];
+    }
+
+    /**
+     * @param bool $runValidation
+     * @return bool
+     */
+    public function save($runValidation = true)
+    {
+        if ($runValidation && !$this->validate())
+            return false;
+
+        $this->product->replaceMainImage($this->getFiles('mainImage'));
+        $this->product->replaceDopImages($this->getFiles('dopImages'));
+
+        return $this->product->save($runValidation);
+    }
 }
 ```
 
@@ -185,72 +185,72 @@ Router component
 class Router extends Component
 {
 
-	/**
-	 * @var string компонент-менеджер фронтенда
-	 */
-	public $urlManagerFrontend = 'urlManagerFrontend';
-	/**
-	 * @var string компонент-менеджер фронтенда
-	 */
-	public $urlManagerBackend = 'urlManagerBackend';
+    /**
+     * @var string компонент-менеджер фронтенда
+     */
+    public $urlManagerFrontend = 'urlManagerFrontend';
+    /**
+     * @var string компонент-менеджер фронтенда
+     */
+    public $urlManagerBackend = 'urlManagerBackend';
 
-	/** @var UrlManager */
-	private $_frontendManager;
+    /** @var UrlManager */
+    private $_frontendManager;
 
-	/** @var UrlManager */
-	private $_backendManager;
-	
-	...
-	
-	/**
-	 * @param Product $product
-	 * @param array $params
-	 * @return null|string
-	 */
-	public function productThumbnailMain(Product $product, $params = [])
-	{
-		$req = $this->_getImageRequest($params, $product->id, PluralImages::TYPE_MAIN);
+    /** @var UrlManager */
+    private $_backendManager;
+    
+    ...
+    
+    /**
+     * @param Product $product
+     * @param array $params
+     * @return null|string
+     */
+    public function productThumbnailMain(Product $product, $params = [])
+    {
+        $req = $this->_getImageRequest($params, $product->id, PluralImages::TYPE_MAIN);
 
-		return $this->_frontendManager->createUrl(ArrayHelper::merge(
-			['/catalog/product/picture-main', 'name' => Inflector::slug($product->title)],
-			$req->getRequestParams(['type'])
-		));
-	}
+        return $this->_frontendManager->createUrl(ArrayHelper::merge(
+            ['/catalog/product/picture-main', 'name' => Inflector::slug($product->title)],
+            $req->getRequestParams(['type'])
+        ));
+    }
 
-	/**
-	 * @param Product $product
-	 * @param array $params
-	 * @param int $i
-	 * @return null|string
-	 */
-	public function productThumbnailDop(Product $product, int $i, $params = [])
-	{
-		$req = $this->_getImageRequest($params, $product->id, PluralImages::TYPE_DOP, $i);
+    /**
+     * @param Product $product
+     * @param array $params
+     * @param int $i
+     * @return null|string
+     */
+    public function productThumbnailDop(Product $product, int $i, $params = [])
+    {
+        $req = $this->_getImageRequest($params, $product->id, PluralImages::TYPE_DOP, $i);
 
-		return $this->_frontendManager->createUrl(ArrayHelper::merge(
-			['/catalog/product/picture-dop', 'name' => Inflector::slug($product->title)],
-			$req->getRequestParams(['type'])
-		));
-	}
-	
-	/**
-	 * @param array $params
-	 * @param int $id
-	 * @param string $type
-	 * @param int|null $i
-	 * @return ImageActionRequest
-	 * @throws
-	 */
-	private function _getImageRequest($params, $id, $type, $i = null)
-	{
-		$params['type'] = $type;
-		$params['id'] = $id;
-		$params['i'] = $i;
-		$params['class'] = ImageActionRequest::class;
+        return $this->_frontendManager->createUrl(ArrayHelper::merge(
+            ['/catalog/product/picture-dop', 'name' => Inflector::slug($product->title)],
+            $req->getRequestParams(['type'])
+        ));
+    }
+    
+    /**
+     * @param array $params
+     * @param int $id
+     * @param string $type
+     * @param int|null $i
+     * @return ImageActionRequest
+     * @throws
+     */
+    private function _getImageRequest($params, $id, $type, $i = null)
+    {
+        $params['type'] = $type;
+        $params['id'] = $id;
+        $params['i'] = $i;
+        $params['class'] = ImageActionRequest::class;
 
-		return Yii::createObject($params);
-	}
-	
+        return Yii::createObject($params);
+    }
+    
 }
 ```
 
@@ -260,24 +260,20 @@ Frontend controller
 public function actions()
 {
 	return [
-		...
-		return [
-			'picture-main' => [
-				'class' => 'ivankff\yii2UploadImages\ImageAction',
-				'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
-				'dir' => Product::getImagesDir(),
-				'widen' => Product::getImagesWiden(),
-				'type' => PluralImages::TYPE_MAIN,
-			],
-			'picture-dop' => [
-				'class' => 'ivankff\yii2UploadImages\ImageAction',
-				'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
-				'dir' => Product::getImagesDir(),
-				'widen' => Product::getImagesWiden(),
-				'type' => PluralImages::TYPE_DOP,
-			],
-		];
-		...
+		'picture-main' => [
+			'class' => 'ivankff\yii2UploadImages\ImageAction',
+			'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
+			'dir' => Product::getImagesDir(),
+			'widen' => Product::getImagesWiden(),
+			'type' => PluralImages::TYPE_MAIN,
+		],
+		'picture-dop' => [
+			'class' => 'ivankff\yii2UploadImages\ImageAction',
+			'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
+			'dir' => Product::getImagesDir(),
+			'widen' => Product::getImagesWiden(),
+			'type' => PluralImages::TYPE_DOP,
+		],
 	];
 }
 ```
