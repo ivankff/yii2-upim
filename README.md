@@ -104,6 +104,8 @@ class ProductForm extends Model {
                 'class' => 'ivankff\yii2UploadImages\UploadBehavior',
                 'single' => [
                     'mainImage' => $this->_ar->images->getMain(),
+                ],
+                'multiple' => [
                     'dopImages' => $this->_ar->images->getDop(),
                 ],
             ],
