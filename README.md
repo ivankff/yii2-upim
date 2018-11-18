@@ -101,7 +101,7 @@ class ProductForm extends Model {
     {
         return [
             'upload' => [
-                'class' => 'backend\images\UploadBehavior',
+                'class' => 'ivankff\yii2UploadImages\UploadBehavior',
                 'single' => [
                     'mainImage' => $this->_ar->images->getMain(),
                     'dopImages' => $this->_ar->images->getDop(),
