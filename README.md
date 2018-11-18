@@ -259,21 +259,21 @@ Frontend controller
 ```php
 public function actions()
 {
-	return [
-		'picture-main' => [
-			'class' => 'ivankff\yii2UploadImages\ImageAction',
-			'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
-			'dir' => Product::getImagesDir(),
-			'widen' => Product::getImagesWiden(),
-			'type' => PluralImages::TYPE_MAIN,
-		],
-		'picture-dop' => [
-			'class' => 'ivankff\yii2UploadImages\ImageAction',
-			'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
-			'dir' => Product::getImagesDir(),
-			'widen' => Product::getImagesWiden(),
-			'type' => PluralImages::TYPE_DOP,
-		],
-	];
+    return [
+        'picture-main' => [
+            'class' => 'ivankff\yii2UploadImages\ImageAction',
+            'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
+            'dir' => Product::getImagesDir(),
+            'widen' => Product::getImagesWiden(),
+            'type' => PluralImages::TYPE_MAIN,
+        ],
+        'picture-dop' => [
+            'class' => 'ivankff\yii2UploadImages\ImageAction',
+            'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
+            'dir' => Product::getImagesDir(),
+            'widen' => Product::getImagesWiden(),
+            'type' => PluralImages::TYPE_DOP,
+        ],
+    ];
 }
 ```
