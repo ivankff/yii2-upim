@@ -17,12 +17,13 @@ class SingleImage extends BaseImages
 
     /**
      * @param string|null $file
+     * @param bool $keepOriginal
      * @return bool
      */
-    public function replaceMain(string $file = null)
+    public function replaceMain(string $file = null, $keepOriginal = false)
     {
         $files = !empty($file) ? [$file] : [];
-        return $this->_replace(self::TYPE_MAIN, $files);
+        return $this->_replace(self::TYPE_MAIN, $files, $keepOriginal);
     }
 
     /**

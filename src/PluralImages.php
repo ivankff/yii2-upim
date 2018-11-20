@@ -35,21 +35,23 @@ class PluralImages extends BaseImages
 
     /**
      * @param string|null $file
+     * @param bool $keepOriginal
      * @return bool
      */
-    public function replaceMain(string $file = null)
+    public function replaceMain(string $file = null, $keepOriginal = false)
     {
         $files = !empty($file) ? [$file] : [];
-        return $this->_replace(self::TYPE_MAIN, $files);
+        return $this->_replace(self::TYPE_MAIN, $files, $keepOriginal);
     }
 
     /**
      * @param array $files
+     * @param bool $keepOriginal
      * @return bool
      */
-    public function replaceDop(array $files)
+    public function replaceDop(array $files, $keepOriginal = false)
     {
-        return $this->_replace(self::TYPE_DOP, $files);
+        return $this->_replace(self::TYPE_DOP, $files, $keepOriginal);
     }
 
     /**

@@ -132,10 +132,10 @@ class ProductForm extends Model {
         if ($runValidation && !$this->validate())
             return false;
 
-        $this->product->replaceMainImage($this->getFiles('mainImage'));
-        $this->product->replaceDopImages($this->getFiles('dopImages'));
+        $this->_ar->images->replaceMain($this->getFiles('mainImage'));
+        $this->_ar->images->replaceDop($this->getFiles('dopImages'));
 
-        return $this->product->save($runValidation);
+        return $this->_ar->save($runValidation);
     }
 }
 ```

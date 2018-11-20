@@ -29,6 +29,12 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
 
     /** @var array */
     private $_images = [];
+    /**
+     * @var bool|null сохранять или нет оригинальное изображение при _save
+     * @see _replace()
+     * @see _save()
+     */
+    private $_keepOriginal;
 
     /**
      * {@inheritdoc}
@@ -121,7 +127,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
 
                             if ($save) {
                                 unset($image);
-                                if (!unlink($file)) {
+                                if (!$this->_keepOriginal && !unlink($file)) {
                                     \Yii::info("Файл {$file} не был удален", __FUNCTION__);
                                 }
 
@@ -149,6 +155,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
 
         }
 
+        $this->_keepOriginal = null;
         $this->_images = $this->_load($id);
         return $result;
     }
@@ -246,12 +253,15 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
     /**
      * @param string $type
      * @param string[] $files
+     * @param bool $keepOriginal сохранить или нет переносимый файл
      * @return bool была ли замена или нет
      */
-    protected function _replace(string $type, array $files)
+    protected function _replace(string $type, array $files, $keepOriginal = false)
     {
         Assertion::allFile($files);
         Assertion::inArray($type, array_keys($this->types()));
+
+        $this->_keepOriginal = $keepOriginal;
 
         $old = $this->_get($type);
         $this->_images[$type] = array_slice($files, -$this->types()[$type]['max']);
