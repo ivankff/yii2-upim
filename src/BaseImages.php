@@ -140,7 +140,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
                     }
                 }
                 if ($file !== $newFile) {
-                    if (!rename($file, $newFile . '.tmp')) {
+                    if (! call_user_func($this->_keepOriginal ? 'copy' : 'rename', $file, $newFile . '.tmp')) {
                         $result = false;
                         \Yii::warning("Файл {$file} не был переименован в {$newFile}", __FUNCTION__);
                     } else {
