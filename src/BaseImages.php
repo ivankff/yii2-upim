@@ -106,46 +106,51 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
             $ftmp = [];
 
             foreach ($this->_images[$type] as $i=> $file) {
-                /** @var Kohana_Image_GD $image */
-                $image = Yii::$app->image->load($file);
+                try {
+                    /** @var Kohana_Image_GD $image */
+                    $image = Yii::$app->image->load($file);
 
-                $ext = image_type_to_extension($image->type, false);
-                if ('jpeg' === $ext) $ext = 'jpg';
-                $newFile = $this->_getImagePath($id, $type, $i+1, $ext);
+                    $ext = image_type_to_extension($image->type, false);
+                    if ('jpeg' === $ext) $ext = 'jpg';
+                    $newFile = $this->_getImagePath($id, $type, $i+1, $ext);
 
-                if (!in_array($file, $oldImages[$type])) {
-                    if (!empty($options['widen'])) {
-                        if ($image->width > $options['widen'] || $image->height > $options['widen']) {
-                            $image->resize($options['widen'], $options['widen']);
-                            $save = false;
+                    if (!in_array($file, $oldImages[$type])) {
+                        if (!empty($options['widen'])) {
+                            if ($image->width > $options['widen'] || $image->height > $options['widen']) {
+                                $image->resize($options['widen'], $options['widen']);
+                                $save = false;
 
-                            try {
-                                $save = $image->save($newFile, 100);
-                            } catch (ErrorException $e) {
-                                \Yii::warning("Файл {$file} не был сохранен с ресайзом в {$newFile}", __FUNCTION__);
-                            }
-
-                            if ($save) {
-                                unset($image);
-                                if (!$this->_keepOriginal && !unlink($file)) {
-                                    \Yii::info("Файл {$file} не был удален", __FUNCTION__);
+                                try {
+                                    $save = $image->save($newFile, 100);
+                                } catch (ErrorException $e) {
+                                    \Yii::warning("Файл {$file} не был сохранен с ресайзом в {$newFile}", __FUNCTION__);
                                 }
 
-                                continue;
-                            } else {
-                                $result = false;
-                                \Yii::warning("Файл {$file} не был сохранен с ресайзом в {$newFile}", __FUNCTION__);
+                                if ($save) {
+                                    unset($image);
+                                    if (!$this->_keepOriginal && !unlink($file)) {
+                                        \Yii::info("Файл {$file} не был удален", __FUNCTION__);
+                                    }
+
+                                    continue;
+                                } else {
+                                    $result = false;
+                                    \Yii::warning("Файл {$file} не был сохранен с ресайзом в {$newFile}", __FUNCTION__);
+                                }
                             }
                         }
                     }
-                }
-                if ($file !== $newFile) {
-                    if (! call_user_func($this->_keepOriginal ? 'copy' : 'rename', $file, $newFile . '.tmp')) {
-                        $result = false;
-                        \Yii::warning("Файл {$file} не был переименован в {$newFile}", __FUNCTION__);
-                    } else {
-                        $ftmp[$newFile . '.tmp'] = $newFile;
+                    if ($file !== $newFile) {
+                        if (! call_user_func($this->_keepOriginal ? 'copy' : 'rename', $file, $newFile . '.tmp')) {
+                            $result = false;
+                            \Yii::warning("Файл {$file} не был переименован в {$newFile}", __FUNCTION__);
+                        } else {
+                            $ftmp[$newFile . '.tmp'] = $newFile;
+                        }
                     }
+                } catch (\Exception $e) {
+                    $result = false;
+                    \Yii::error($e->getMessage() . PHP_EOL . $e->getTraceAsString(), __METHOD__);
                 }
             }
 
