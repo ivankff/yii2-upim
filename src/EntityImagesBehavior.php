@@ -7,13 +7,12 @@ use yii\db\ActiveRecord;
 use yii\db\AfterSaveEvent;
 use yii\helpers\ArrayHelper;
 
+/**
+ * @property ActiveRecord $owner
+ */
 class EntityImagesBehavior extends Behavior
 {
 
-    /**
-     * @var ActiveRecord
-     */
-    public $owner;
     /**
      * @var array|string
      */
