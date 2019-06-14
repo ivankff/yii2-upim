@@ -6,7 +6,8 @@
     "license": "BSD-3-Clause",
     "authors": [
         {
-            "email": "ivan@sabint.ru"
+            "name": "ivankff",
+            "email": "ivankff@gmail.com"
         }
     ],
     "support": {
@@ -26,12 +27,6 @@
     "autoload": {
         "psr-4": {
             "ivankff\\yii2UploadImages\\": "src/"
-        }
-    },
-    "extra": {
-        "asset-installer-paths": {
-            "npm-asset-library": "vendor/npm",
-            "bower-asset-library": "vendor/bower"
         }
     }
 }

@@ -69,6 +69,18 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
     }
 
     /**
+     * @return bool
+     */
+    public function clear()
+    {
+        foreach ($this->types() as $type => $options) {
+            $this->_images[$type] = [];
+        }
+
+        return true;
+    }
+
+    /**
      * @param string $type
      * @param int $i - номер фоты >=1
      * @return null

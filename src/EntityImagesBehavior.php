@@ -3,6 +3,7 @@
 namespace ivankff\yii2UploadImages;
 
 use yii\base\Behavior;
+use yii\base\Event;
 use yii\db\ActiveRecord;
 use yii\db\AfterSaveEvent;
 use yii\helpers\ArrayHelper;
@@ -37,6 +38,7 @@ class EntityImagesBehavior extends Behavior
         return [
             ActiveRecord::EVENT_AFTER_UPDATE => 'afterSave',
             ActiveRecord::EVENT_AFTER_INSERT => 'afterSave',
+            ActiveRecord::EVENT_AFTER_DELETE => 'afterDelete',
         ];
     }
 
@@ -45,6 +47,15 @@ class EntityImagesBehavior extends Behavior
      */
     public function afterSave($event)
     {
+        $this->_getImages()->save($this->owner->primaryKey);
+    }
+
+    /**
+     * @param Event $event
+     */
+    public function afterDelete($event)
+    {
+        $this->_getImages()->clear();
         $this->_getImages()->save($this->owner->primaryKey);
     }
 

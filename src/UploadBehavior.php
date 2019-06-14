@@ -57,9 +57,7 @@ class UploadBehavior extends Behavior
     public function attach($owner)
     {
         parent::attach($owner);
-
-        if (! $this->owner instanceof ActiveRecord)
-            $this->_fillFiles();
+        $this->_fillFiles();
     }
 
     /**
@@ -198,7 +196,10 @@ class UploadBehavior extends Behavior
         if (StringHelper::endsWith($key, '_keys')) {
             $attribute = mb_substr($key, 0, -5);
 
-            if (isset($this->_files[$attribute]))
+            if (array_key_exists($attribute, $this->single))
+                return $attribute;
+
+            if (array_key_exists($attribute, $this->multiple))
                 return $attribute;
         }
 
@@ -218,7 +219,9 @@ class UploadBehavior extends Behavior
         foreach ($this->owner->getBehaviors() as $key => $behavior) {
             if ($behavior instanceof EntityImagesBehavior) {
                 $images = $behavior->getImages();
-                $images->load($this->owner->primaryKey);
+
+                if (! $this->owner->isNewRecord)
+                    $images->load($this->owner->primaryKey);
             }
         }
 

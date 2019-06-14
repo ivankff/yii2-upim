@@ -23,6 +23,11 @@ interface ImagesInterface
     public function load($id);
 
     /**
+     * @return bool
+     */
+    public function clear();
+
+    /**
      * @param string $type
      * @param int $i - номер фоты >=1
      * @return null
