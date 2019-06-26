@@ -88,7 +88,7 @@ class ImageAction extends Action
 
         if ($filePath = realpath($images->get($params->type, $params->getI()))) {
             if ($this->checkHash && ! $params->checkHash())
-                throw new BadRequestHttpException('Wrong security hash');
+                throw new BadRequestHttpException('Invalid security hash');
 
             if (! $params->w && ! $params->h)
                 return $this->_render($filePath, $params);
@@ -104,7 +104,7 @@ class ImageAction extends Action
 
                 /** @var Image_GD $image */
                 $image = \Yii::$app->image->load($filePath);
-                $image->resize($params->w, $params->h, $params->getMasterDimension());
+                $image->resize(min($params->w, $image->width), min($params->h, $image->height), $params->getMasterDimension());
                 $image->save($cachePath, $this->imageQuality);
             }
 
