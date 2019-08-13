@@ -15,7 +15,7 @@
         "source": "https://github.com/ivankff/yii2-upim"
     },
     "require": {
-        "php": ">=7.0",
+        "php": ">=5.6.0",
         "yiisoft/yii2": "~2.0",
         "beberlei/assert": "^2.7",
         "yurkinx/yii2-image": "dev-master",

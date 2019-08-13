@@ -32,6 +32,6 @@ interface ImagesInterface
      * @param int $i - номер фоты >=1
      * @return null
      */
-    public function get(string $type, int $i = 1);
+    public function get($type, $i = 1);
 
 }

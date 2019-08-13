@@ -8,6 +8,9 @@ use yii\web\Response;
 class DeleteImageAction extends Action
 {
 
+    /**
+     * {@inheritdoc}
+     */
     public function run()
     {
         \Yii::$app->response->format = Response::FORMAT_JSON;

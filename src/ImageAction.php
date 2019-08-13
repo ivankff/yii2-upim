@@ -44,6 +44,9 @@ class ImageAction extends Action
     /** @var int $imageQuality */
     public $imageQuality = 80;
 
+    /**
+     * {@inheritdoc}
+     */
     public function init()
     {
         if (! class_exists($this->imagesClass))

@@ -85,7 +85,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param int $i - номер фоты >=1
      * @return null
      */
-    public function get(string $type, int $i = 1)
+    public function get($type, $i = 1)
     {
         return isset($this->_images[$type][$i-1]) ? $this->_images[$type][$i-1] : null;
     }
@@ -182,7 +182,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param int $i - номер фоты >=1
      * @return string|null
      */
-    protected function _get(string $type, int $i = 1)
+    protected function _get($type, $i = 1)
     {
         return isset($this->_images[$type][$i-1]) ? $this->_images[$type][$i-1] : null;
     }
@@ -191,7 +191,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param string $type
      * @return array
      */
-    protected function _getAll(string $type)
+    protected function _getAll($type)
     {
         return isset($this->_images[$type]) ? $this->_images[$type] : [];
     }
@@ -202,7 +202,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @return array
      * @throws
      */
-    private function _load($id, int $max = null)
+    private function _load($id, $max = null)
     {
         Assertion::notBlank($id);
 
@@ -229,7 +229,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param int $i - порядковый номер 1,2,3....
      * @return bool
      */
-    protected function _delete(string $type, int $i)
+    protected function _delete($type, $i)
     {
         Assertion::inArray($type, array_keys($this->types()));
         if (isset($this->_images[$type][$i-1])) {
@@ -243,7 +243,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param string $type
      * @return bool
      */
-    protected function _truncate(string $type)
+    protected function _truncate($type)
     {
         Assertion::inArray($type, array_keys($this->types()));
         $this->_images[$type] = [];
@@ -255,7 +255,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param string[] $files
      * @return bool
      */
-    protected function _add(string $type, array $files)
+    protected function _add($type, array $files)
     {
         Assertion::allFile($files);
         Assertion::inArray($type, array_keys($this->types()));
@@ -273,7 +273,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param bool $keepOriginal сохранить или нет переносимый файл
      * @return bool была ли замена или нет
      */
-    protected function _replace(string $type, array $files, $keepOriginal = false)
+    protected function _replace($type, array $files, $keepOriginal = false)
     {
         Assertion::allFile($files);
         Assertion::inArray($type, array_keys($this->types()));
@@ -294,7 +294,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param string $extension
      * @return string
      */
-    private function _getImagePath($id, string $type, int $num, string $extension)
+    private function _getImagePath($id, $type, $num, $extension)
     {
         return $this->_getDirToId($id) . DIRECTORY_SEPARATOR . $id . '-' . $type . $num . '.' . $extension;
     }

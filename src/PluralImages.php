@@ -28,7 +28,7 @@ class PluralImages extends BaseImages
      * @param int $i >=1
      * @return null|string
      */
-    public function getDopOne(int $i)
+    public function getDopOne($i)
     {
         return $this->_get(self::TYPE_DOP, $i);
     }
@@ -38,7 +38,7 @@ class PluralImages extends BaseImages
      * @param bool $keepOriginal
      * @return bool
      */
-    public function replaceMain(string $file = null, $keepOriginal = false)
+    public function replaceMain($file = null, $keepOriginal = false)
     {
         $files = !empty($file) ? [$file] : [];
         return $this->_replace(self::TYPE_MAIN, $files, $keepOriginal);

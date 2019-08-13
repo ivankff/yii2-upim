@@ -10,6 +10,9 @@ use yii\web\JsExpression;
 class FileInputWidget extends \kartik\widgets\FileInput
 {
 
+    /**
+     * {@inheritdoc}
+     */
     public function __construct(array $config = [])
     {
         $previews = ArrayHelper::getValue($config, 'pluginOptions.initialPreview');
@@ -36,7 +39,9 @@ class FileInputWidget extends \kartik\widgets\FileInput
         parent::__construct($config);
     }
 
-
+    /**
+     * {@inheritdoc}
+     */
     public function init()
     {
         $attribute = Html::getAttributeName($this->attribute);
@@ -61,6 +66,9 @@ class FileInputWidget extends \kartik\widgets\FileInput
         echo Html::activeHiddenInput($this->model, "{$attribute}_keys");
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function registerAssets()
     {
         parent::registerAssets();

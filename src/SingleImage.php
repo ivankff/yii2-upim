@@ -20,7 +20,7 @@ class SingleImage extends BaseImages
      * @param bool $keepOriginal
      * @return bool
      */
-    public function replaceMain(string $file = null, $keepOriginal = false)
+    public function replaceMain($file = null, $keepOriginal = false)
     {
         $files = !empty($file) ? [$file] : [];
         return $this->_replace(self::TYPE_MAIN, $files, $keepOriginal);
