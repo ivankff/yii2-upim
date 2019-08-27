@@ -13,6 +13,8 @@ use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
+/**
+ */
 class ImageAction extends Action
 {
 
@@ -31,7 +33,7 @@ class ImageAction extends Action
      */
     public $widen;
     /**
-     * @var string type of image. Example: mail, dop
+     * @var string type of image. Example: main, dop
      */
     public $type;
 
@@ -67,19 +69,10 @@ class ImageAction extends Action
      */
     public function run()
     {
-        try {
-            /** @var ImageActionRequest $params */
-            $h = new ImageActionRequest;
-            $keys = array_keys(ArrayHelper::toArray($h));
+        $params = new ImageActionRequest(['type' => $this->type]);
 
-            $get = ArrayHelper::filter(Yii::$app->request->get(), $keys);
-            $get['type'] = $this->type;
-            $get['class'] = ImageActionRequest::class;
-
-            $params = Yii::createObject($get);
-        } catch (\Exception $e) {
-            throw new BadRequestHttpException('There is error in request');
-        }
+        if (! ($params->load(Yii::$app->request->get(), '') && $params->validate()))
+            throw new BadRequestHttpException('There is an error in request');
 
         /** @var ImagesInterface $images */
         $images = Yii::createObject([
@@ -89,7 +82,7 @@ class ImageAction extends Action
         ]);
         $images->load($params->id);
 
-        if ($filePath = realpath($images->get($params->type, $params->getI()))) {
+        if ($filePath = realpath($images->get($params->type, $params->i))) {
             if ($this->checkHash && ! $params->checkHash())
                 throw new BadRequestHttpException('Invalid security hash');
 

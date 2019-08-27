@@ -2,6 +2,8 @@
 
 namespace ivankff\yii2UploadImages;
 
+/**
+ */
 class SingleImage extends BaseImages
 {
 

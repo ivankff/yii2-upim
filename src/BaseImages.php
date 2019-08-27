@@ -87,7 +87,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      */
     public function get($type, $i = 1)
     {
-        return isset($this->_images[$type][$i-1]) ? $this->_images[$type][$i-1] : null;
+        return isset($this->_images[$type][$i]) ? $this->_images[$type][$i] : null;
     }
 
     /**
@@ -117,14 +117,14 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
 
             $ftmp = [];
 
-            foreach ($this->_images[$type] as $i=> $file) {
+            foreach ($this->_images[$type] as $i => $file) {
                 try {
                     /** @var Kohana_Image_GD $image */
                     $image = Yii::$app->image->load($file);
 
                     $ext = image_type_to_extension($image->type, false);
                     if ('jpeg' === $ext) $ext = 'jpg';
-                    $newFile = $this->_getImagePath($id, $type, $i+1, $ext);
+                    $newFile = $this->_getImagePath($id, $type, $i, $ext);
 
                     if (!in_array($file, $oldImages[$type])) {
                         if (!empty($options['widen'])) {
@@ -184,7 +184,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      */
     protected function _get($type, $i = 1)
     {
-        return isset($this->_images[$type][$i-1]) ? $this->_images[$type][$i-1] : null;
+        return isset($this->_images[$type][$i]) ? $this->_images[$type][$i] : null;
     }
 
     /**
@@ -211,12 +211,13 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
         foreach ($this->types() as $type => $options) {
             $images[$type] = [];
             $maxT = $max !== null ? $max : $this->types()[$type]['max'];
+            $c = 0;
 
             for ($i=1; $i<=$maxT; $i++) {
                 foreach ($this->extensions as $extension) {
                     $file = $this->_getImagePath($id, $type, $i, $extension);
                     if (file_exists($file)) {
-                        $images[$type][] = $file;
+                        $images[$type][++$c] = $file;
                     }
                 }
             }
@@ -232,8 +233,8 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
     protected function _delete($type, $i)
     {
         Assertion::inArray($type, array_keys($this->types()));
-        if (isset($this->_images[$type][$i-1])) {
-            $this->_images[$type] = array_slice($this->_images[$type], $i-1, 1);
+        if (isset($this->_images[$type][$i])) {
+            unset($this->_images[$type][$i]);
             return true;
         }
         return false;
@@ -261,9 +262,9 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
         Assertion::inArray($type, array_keys($this->types()));
 
         if (empty($this->_images[$type])) $this->_images[$type] = [];
+        $this->_images[$type] += $files;
+        $this->_slice($type);
 
-        $this->_images[$type] = array_merge($this->_images[$type], $files);
-        $this->_images[$type] = array_slice($this->_images[$type], -$this->types()[$type]['max']);
         return true;
     }
 
@@ -281,7 +282,8 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
         $this->_keepOriginal = $keepOriginal;
 
         $old = $this->_get($type);
-        $this->_images[$type] = array_slice($files, -$this->types()[$type]['max']);
+        unset($this->_images[$type]);
+        $this->_add($type, $files);
         $new = $this->_get($type);
 
         return $old !== $new;
@@ -312,6 +314,16 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
         else $dir = $dir . DIRECTORY_SEPARATOR . mb_substr($id, 0, 1);
         if (!file_exists($dir)) mkdir($dir, 0755, true);
         return $dir;
+    }
+
+    /**
+     * @param string $type
+     */
+    private function _slice($type)
+    {
+        $values = array_slice(array_values($this->_images[$type]), -$this->types()[$type]['max']);
+        $keys = range(1, sizeof($values));
+        $this->_images[$type] = array_combine($keys, $values);
     }
 
 }

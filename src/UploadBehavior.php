@@ -117,12 +117,12 @@ class UploadBehavior extends Behavior
             }
 
             $this->_files[$attribute]['files'] = array_filter($this->_files[$attribute]['files'], function($item, $i) use ($keys){
-                return in_array($i+1, $keys);
+                return in_array($i, $keys);
             }, ARRAY_FILTER_USE_BOTH);
 
             uksort($this->_files[$attribute]['files'], function ($a, $b) use ($keys) {
-                $ka = array_search($a+1, $keys);
-                $kb = array_search($b+1, $keys);
+                $ka = array_search($a, $keys);
+                $kb = array_search($b, $keys);
 
                 if ($ka === $kb)
                     return 0;
@@ -138,13 +138,8 @@ class UploadBehavior extends Behavior
     public function __get($name)
     {
         if (false !== $attribute = $this->_getAttributeForKey($name)){
-            if (! isset($this->_keys[$attribute])) {
-                $plus1 = function ($item) {
-                    return $item + 1;
-                };
-
-                $this->_keys[$attribute] = implode(',', array_map($plus1, array_keys($this->_files[$attribute]['files'])));
-            }
+            if (! isset($this->_keys[$attribute]))
+                $this->_keys[$attribute] = implode(',', array_keys($this->_files[$attribute]['files']));
 
             return $this->_keys[$attribute];
         }

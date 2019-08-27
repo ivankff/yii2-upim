@@ -5,6 +5,8 @@ namespace ivankff\yii2UploadImages;
 use yii\base\Action;
 use yii\web\Response;
 
+/**
+ */
 class DeleteImageAction extends Action
 {
 

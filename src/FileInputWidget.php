@@ -18,7 +18,7 @@ class FileInputWidget extends \kartik\widgets\FileInput
         $previews = ArrayHelper::getValue($config, 'pluginOptions.initialPreview');
 
         $keys = [];
-        foreach ($previews as $k=>$v) $keys[] = ['key' => $k+1];
+        foreach ($previews as $k=>$v) $keys[] = ['key' => $k];
 
         $config = ArrayHelper::merge([
             'options'=>[

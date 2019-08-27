@@ -2,11 +2,13 @@
 
 namespace ivankff\yii2UploadImages;
 
-use yii\base\BaseObject;
+use yii\base\Model;
 use yii\helpers\ArrayHelper;
 use yii\image\drivers\Image;
 
-class ImageActionRequest extends BaseObject
+/**
+ */
+class ImageActionRequest extends Model
 {
 
     public $id;
@@ -21,20 +23,28 @@ class ImageActionRequest extends BaseObject
     public $hash;
 
     /**
-     * @return int
+     * {@inheritdoc}
      */
-    public function getI()
+    public function rules()
     {
-        return max($this->i, 1);
+        return [
+            [['i'], 'default', 'value' => 1, 'when' => function($model) {
+                /** @var self $model */
+                return $model->type === PluralImages::TYPE_MAIN;
+            }],
+            [['i', 'w', 'h'], 'integer', 'min' => 1],
+            [['f'], 'in', 'range' => ['png', 'jpg', 'jpeg']],
+            [['zc'], 'boolean'],
+            [['id', 'type', 'hash'], 'string'],
+            [['type', 'i'], 'required'],
+        ];
     }
 
-    /**
-     * @return bool
-     */
-    public function checkHash()
-    {
-        return $this->hash === $this->_getHash();
-    }
+    /** @return bool */
+    public function checkHash() { return $this->hash === $this->_getHash(); }
+
+    /** @return int */
+    public function getMasterDimension() { return $this->zc ? Image::CROP : Image::AUTO; }
 
     /**
      * @param $filePath
@@ -52,17 +62,6 @@ class ImageActionRequest extends BaseObject
         $aFileInfo = pathinfo($filePath);
 
         return \Yii::$app->cache->buildKey($params) . "." . $aFileInfo['extension'];
-    }
-
-    /**
-     * @return int
-     */
-    public function getMasterDimension()
-    {
-        if ($this->zc)
-            return Image::CROP;
-
-        return Image::AUTO;
     }
 
     /**
