@@ -321,9 +321,12 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      */
     private function _slice($type)
     {
-        $values = array_slice(array_values($this->_images[$type]), -$this->types()[$type]['max']);
-        $keys = range(1, sizeof($values));
-        $this->_images[$type] = array_combine($keys, $values);
+        if ($values = array_slice(array_values($this->_images[$type]), -$this->types()[$type]['max'])) {
+            $keys = range(1, sizeof($values));
+            $this->_images[$type] = array_combine($keys, $values);
+        } else {
+            $this->_images[$type] = [];
+        }
     }
 
 }
