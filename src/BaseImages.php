@@ -100,6 +100,28 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
     }
 
     /**
+     * @param string $type
+     * @param string|array $files один или несколько файлов
+     * @param bool $keepOriginal копировать или перемещать оригинал
+     * @return bool
+     */
+    public function add($type, $files, $keepOriginal = false)
+    {
+        return $this->_add($type, (array)$files, $keepOriginal);
+    }
+
+    /**
+     * @param string $type
+     * @param string|array $files один или несколько файлов
+     * @param bool $keepOriginal копировать или перемещать оригинал
+     * @return null
+     */
+    public function replace($type, $files, $keepOriginal = false)
+    {
+        return $this->_replace($type, (array)$files, $keepOriginal);
+    }
+
+    /**
      * Сохранение фоток
      * @param string|int $id
      * @return bool
@@ -263,12 +285,15 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
     /**
      * @param string $type
      * @param string[] $files
+     * @param bool $keepOriginal
      * @return bool
      */
-    protected function _add($type, array $files)
+    protected function _add($type, array $files, $keepOriginal)
     {
         Assertion::allFile($files);
         Assertion::inArray($type, array_keys($this->types()));
+
+        $this->_keepOriginal = $keepOriginal;
 
         if (empty($this->_images[$type])) $this->_images[$type] = [];
         $this->_images[$type] += $files;
@@ -283,16 +308,14 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      * @param bool $keepOriginal сохранить или нет переносимый файл
      * @return bool была ли замена или нет
      */
-    protected function _replace($type, array $files, $keepOriginal = false)
+    protected function _replace($type, array $files, $keepOriginal)
     {
         Assertion::allFile($files);
         Assertion::inArray($type, array_keys($this->types()));
 
-        $this->_keepOriginal = $keepOriginal;
-
         $old = $this->_get($type);
         unset($this->_images[$type]);
-        $this->_add($type, $files);
+        $this->_add($type, $files, $keepOriginal);
         $new = $this->_get($type);
 
         return $old !== $new;
