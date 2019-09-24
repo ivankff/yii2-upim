@@ -87,7 +87,16 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
      */
     public function get($type, $i = 1)
     {
-        return isset($this->_images[$type][$i]) ? $this->_images[$type][$i] : null;
+        return $this->_get($type, $i);
+    }
+
+    /**
+     * @param string $type
+     * @return null
+     */
+    public function getAll($type)
+    {
+        return $this->_getAll($type);
     }
 
     /**
