@@ -71,7 +71,7 @@ class ImageAction extends Action
     {
         $params = new ImageActionRequest(['type' => $this->type]);
 
-        if (! ($params->load(Yii::$app->request->get(), '') && $params->validate()))
+        if (! ($params->load(ArrayHelper::filter(Yii::$app->request->get(), $params->safeAttributes()), '') && $params->validate()))
             throw new BadRequestHttpException('There is an error in request');
 
         /** @var ImagesInterface $images */
