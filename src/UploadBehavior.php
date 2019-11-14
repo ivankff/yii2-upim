@@ -10,7 +10,6 @@ use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\base\ModelEvent;
 use yii\db\ActiveRecord;
-use yii\helpers\ArrayHelper;
 use yii\helpers\StringHelper;
 use yii\web\UploadedFile;
 
@@ -108,12 +107,13 @@ class UploadBehavior extends Behavior
 
             if ($this->_files[$attribute]['type'] === 'multiple') {
                 foreach ($this->owner->{$attribute} as $tmpFile) {
-                    $this->_files[$attribute]['files'][] = $tmpFile->tempName;
-                    $keys[] = sizeof($this->_files[$attribute]['files']);
+                    $key = max(array_keys($this->_files[$attribute]['files']) + [0]) + 1;
+                    $this->_files[$attribute]['files'][$key] = $tmpFile->tempName;
+                    $keys[] = $key;
                 }
             } elseif ($this->owner->{$attribute}) {
-                $this->_files[$attribute]['files'] = [$this->owner->{$attribute}->tempName];
-                $keys[] = sizeof($this->_files[$attribute]['files']);
+                $this->_files[$attribute]['files'] = [1 => $this->owner->{$attribute}->tempName];
+                $keys[] = 1;
             }
 
             $this->_files[$attribute]['files'] = array_filter($this->_files[$attribute]['files'], function($item, $i) use ($keys){
@@ -225,7 +225,7 @@ class UploadBehavior extends Behavior
                 $file = $images->get($file);
             }
 
-            $this->_files[$attribute] = ['type' => 'single', 'files' => $file ? [$file] : []];
+            $this->_files[$attribute] = ['type' => 'single', 'files' => $file ? [1 => $file] : []];
         }
         foreach ($this->multiple as $attribute => $files) {
             foreach ($files as &$file) {
@@ -234,7 +234,7 @@ class UploadBehavior extends Behavior
                 }
             }
 
-            $this->_files[$attribute] = ['type' => 'multiple', 'files' => array_merge($files, [])];
+            $this->_files[$attribute] = ['type' => 'multiple', 'files' => $files];
         }
 
         foreach ($this->_files as $attribute => $files) {

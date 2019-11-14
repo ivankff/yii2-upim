@@ -27,7 +27,7 @@ class PluralImages extends BaseImages
     }
 
     /**
-     * @param int $i >=1
+     * @param int $i >= 1
      * @return null|string
      */
     public function getDopOne($i)

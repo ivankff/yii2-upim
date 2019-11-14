@@ -50,12 +50,11 @@ class FileInputWidget extends \kartik\widgets\FileInput
         $this->pluginOptions = ArrayHelper::merge($this->pluginOptions, [
             'fileActionSettings' => [
                 'dragSettings' => [
-                    'onSort' => new \yii\web\JsExpression("function(event){
-                            var keys = console.log(event);
-                            var keys = jQuery('#{$keysInputId}').val().split(',');
+                    'onSort' => new \yii\web\JsExpression("function(event) {
+                            var keys = String(jQuery('#{$keysInputId}').val()).split(',');
                             var buff = keys[event.oldIndex];
-                            keys[event.oldIndex] = keys[event.newIndex];
-                            keys[event.newIndex] = buff;
+                            keys.splice(event.oldIndex, 1);
+                            keys.splice(event.newIndex, 0, buff);
                             jQuery('#{$keysInputId}').val(keys.join(','));
                         }"),
                 ],
@@ -63,7 +62,7 @@ class FileInputWidget extends \kartik\widgets\FileInput
         ]);
 
         parent::init();
-        echo Html::activeHiddenInput($this->model, "{$attribute}_keys");
+        echo Html::activeHiddenInput($this->model, "{$attribute}_keys", ['data-keys' => "{$this->model->{"{$attribute}_keys"}}"]);
     }
 
     /**
@@ -72,20 +71,17 @@ class FileInputWidget extends \kartik\widgets\FileInput
     public function registerAssets()
     {
         parent::registerAssets();
+
         $attribute = Html::getAttributeName($this->attribute);
         $inputId = Html::getInputId($this->model, $this->attribute);
         $keysInputId = Html::getInputId($this->model, "{$attribute}_keys");
 
         $this->getView()->registerJs(new JsExpression("jQuery('#{$inputId}').on('filedeleted', function(event, key, jqXHR, data) {
-                            var keys = console.log(event);
-                            var keys = jQuery('#{$keysInputId}').val().split(',');
-                            var idx = keys.indexOf(String(key));
-                            console.log(keys);
-                            console.log(toString(key));
-                            console.log(idx);
-                            keys.splice(idx, 1);
-                            jQuery('#{$keysInputId}').val(keys.join(','));
-                            console.log(keys);
+                            var keys = String(jQuery('#{$keysInputId}').data('keys')).split(',');
+                            var value = String(jQuery('#{$keysInputId}').val()).split(',');
+                            var idx = value.indexOf(keys[key]);
+                            value.splice(idx, 1);
+                            jQuery('#{$keysInputId}').val(value.join(','));
 });"));
     }
 

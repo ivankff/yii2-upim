@@ -25,10 +25,10 @@ interface ImagesInterface
     public function clear();
     /**
      * @param string $type
-     * @param int $i - номер фоты >=0
+     * @param int $i - номер фоты >= 1
      * @return string|null
      */
-    public function get($type, $i = 0);
+    public function get($type, $i = 1);
     /**
      * @param string $type
      * @return string[]

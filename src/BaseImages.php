@@ -82,7 +82,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
 
     /**
      * @param string $type
-     * @param int $i - номер фоты >=1
+     * @param int $i - номер фоты >= 1
      * @return null
      */
     public function get($type, $i = 1)
@@ -210,7 +210,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
 
     /**
      * @param string $type
-     * @param int $i - номер фоты >=1
+     * @param int $i - номер фоты >= 1
      * @return string|null
      */
     protected function _get($type, $i = 1)
