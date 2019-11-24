@@ -82,7 +82,9 @@ class ImageAction extends Action
         ]);
         $images->load($params->id);
 
-        if ($filePath = realpath($images->get($params->type, $params->i))) {
+        if ($filePath = $images->get($params->type, $params->i)) {
+            $filePath = realpath($filePath);
+
             if ($this->checkHash && ! $params->checkHash())
                 throw new BadRequestHttpException('Invalid security hash');
 
@@ -107,7 +109,7 @@ class ImageAction extends Action
             return $this->_render($cachePath, $params);
         }
 
-        throw new NotFoundHttpException;
+        throw new NotFoundHttpException('Image not found');
     }
 
     /**

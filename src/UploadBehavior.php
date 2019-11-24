@@ -15,16 +15,42 @@ use yii\web\UploadedFile;
 
 /**
  * @property Model|ActiveRecord $owner
+ *
+ * ActiveRecord behavior element:
+ * ```php
+ * 'upload' => [
+ *     'class' => 'ivankff\yii2UploadImages\UploadBehavior',
+ *     'single' => [
+ *         'mainImage' => 'main',
+ *     ],
+ *     'multiple' => [
+ *         'dopImages' => 'dop',
+ *     ],
+ * ],
+ * ```
+ *
+ * Not ActiveRecord (Model) behavior element:
+ * ```php
+ * 'upload' => [
+ *     'class' => 'ivankff\yii2UploadImages\UploadBehavior',
+ *     'single' => [
+ *         'mainImage' => $this->_ar->images->getMain(),
+ *     ],
+ *     'multiple' => [
+ *         'dopImages' => $this->_ar->images->getDop(),
+ *     ],
+ * ],
+ * ```
  */
 class UploadBehavior extends Behavior
 {
 
     /**
-     * @var string[] список атрибутов, где возможна только одно изображение
+     * @var array список атрибутов, где возможна только одно изображение
      */
     public $single = [];
     /**
-     * @var array[] список атрибутов, где возможно несколько изображений
+     * @var array список атрибутов, где возможно несколько изображений
      */
     public $multiple = [];
 
@@ -66,7 +92,7 @@ class UploadBehavior extends Behavior
     public function getFiles($attribute)
     {
         if (null === $this->_files)
-            throw new InvalidCallException('Method can call after validate()');
+            throw new InvalidCallException('Method can be called after validate()');
 
         if (!isset($this->_files[$attribute]))
             throw new InvalidArgumentException();
@@ -221,18 +247,14 @@ class UploadBehavior extends Behavior
         }
 
         foreach ($this->single as $attribute => $file) {
-            if ($images && in_array($file, array_keys($images->types()))) {
+            if ($images && in_array($file, array_keys($images->types())))
                 $file = $images->get($file);
-            }
 
             $this->_files[$attribute] = ['type' => 'single', 'files' => $file ? [1 => $file] : []];
         }
         foreach ($this->multiple as $attribute => $files) {
-            foreach ($files as &$file) {
-                if ($images && in_array($file, array_keys($images->types()))) {
-                    $file = $images->get($file);
-                }
-            }
+            if ($images && is_string($files) && in_array($files, array_keys($images->types())))
+                $files = $images->getAll($files);
 
             $this->_files[$attribute] = ['type' => 'multiple', 'files' => $files];
         }
