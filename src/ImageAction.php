@@ -102,6 +102,10 @@ class ImageAction extends Action
 
                 /** @var Image_GD $image */
                 $image = \Yii::$app->image->load($filePath);
+
+                if ($image->mime === 'image/gif')
+                    return $this->_render($filePath, $params);
+
                 $image->resize(min($params->w, $image->width), min($params->h, $image->height), $params->getMasterDimension());
                 $image->save($cachePath, $this->imageQuality);
             }

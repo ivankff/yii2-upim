@@ -33,7 +33,7 @@ class ImageActionRequest extends Model
                 return $model->type === PluralImages::TYPE_MAIN;
             }],
             [['i', 'w', 'h'], 'integer', 'min' => 1],
-            [['f'], 'in', 'range' => ['png', 'jpg', 'jpeg']],
+            [['f'], 'in', 'range' => ['png', 'jpg', 'jpeg', 'gif']],
             [['zc'], 'boolean'],
             [['id', 'type', 'hash'], 'string'],
             [['type', 'i'], 'required'],
