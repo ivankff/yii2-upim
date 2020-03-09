@@ -25,7 +25,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
     /**
      * @var string[] возможные расширения для поиска файлов в папке
      */
-    public $extensions = ['jpg', 'png'];
+    public $extensions = ['jpg', 'png', 'jpeg', 'gif'];
 
     /** @var array */
     private $_images = [];
