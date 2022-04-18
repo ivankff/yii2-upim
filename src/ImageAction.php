@@ -5,6 +5,7 @@ namespace ivankff\yii2UploadImages;
 use Yii;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
+use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\image\drivers\Image;
@@ -19,23 +20,13 @@ class ImageAction extends Action
 {
 
     /**
-     * @var string class is extended by \ivankff\yii2UploadImages\BaseImages
+     * @var string класс ActiveRecord \common\entities\Product\Product
      */
-    public $imagesClass;
+    public $activeRecordClass;
     /**
-     * @var string директория с фото
-     * @see \ivankff\yii2UploadImages\BaseImages::$dir
+     * @var string ключ поведения для ImagesBehavior
      */
-    public $dir;
-    /**
-     * @var int обрезка по большей стороне
-     * @see \ivankff\yii2UploadImages\BaseImages::$widen
-     */
-    public $widen;
-    /**
-     * @var string type of image. Example: main, dop
-     */
-    public $type;
+    public $behaviorKey = 'images';
 
     /** @var bool check security hash */
     public $checkHash = true;
@@ -51,14 +42,11 @@ class ImageAction extends Action
      */
     public function init()
     {
-        if (! class_exists($this->imagesClass))
-            throw new InvalidArgumentException('"imagesClass" must be configurated');
+        if (! class_exists($this->activeRecordClass))
+            throw new InvalidArgumentException('"activeRecordClass" must be configurated');
 
-        if (empty($this->dir))
-            throw new InvalidArgumentException('"dir" must be configurated');
-
-        if (empty($this->type))
-            throw new InvalidArgumentException('"type" must be configurated');
+        if (empty($this->behaviorKey))
+            throw new InvalidArgumentException('"behaviorKey" must be configurated');
 
         parent::init();
     }
@@ -69,20 +57,18 @@ class ImageAction extends Action
      */
     public function run()
     {
-        $params = new ImageActionRequest(['type' => $this->type]);
+        $params = new ImageActionRequest();
 
         if (! ($params->load(ArrayHelper::filter(Yii::$app->request->get(), $params->safeAttributes()), '') && $params->validate()))
             throw new BadRequestHttpException('There is an error in request');
 
+        /** @var ActiveRecord $ar */
         /** @var ImagesInterface $images */
-        $images = Yii::createObject([
-            'class' => $this->imagesClass,
-            'dir' => $this->dir,
-            'widen' => $this->widen,
-        ]);
+        $ar = new $this->activeRecordClass;
+        $images = $ar->getBehavior($this->behaviorKey)->getImages();
         $images->load($params->id);
 
-        if ($filePath = $images->get($params->type, $params->i)) {
+        if ($filePath = $images->getOne(max($params->i, 1))) {
             $filePath = realpath($filePath);
 
             if ($this->checkHash && ! $params->checkHash())

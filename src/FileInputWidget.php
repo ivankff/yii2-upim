@@ -7,6 +7,8 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\JsExpression;
 
+/**
+ */
 class FileInputWidget extends \kartik\widgets\FileInput
 {
 

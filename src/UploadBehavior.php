@@ -4,7 +4,6 @@ namespace ivankff\yii2UploadImages;
 
 use yii\base\Behavior;
 use yii\base\Event;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
@@ -20,12 +19,8 @@ use yii\web\UploadedFile;
  * ```php
  * 'upload' => [
  *     'class' => 'ivankff\yii2UploadImages\UploadBehavior',
- *     'single' => [
- *         'mainImage' => 'main',
- *     ],
- *     'multiple' => [
- *         'dopImages' => 'dop',
- *     ],
+ *     'formAttribute' => 'uploadImage',
+ *     'behaviorKey' => 'images',
  * ],
  * ```
  *
@@ -33,36 +28,25 @@ use yii\web\UploadedFile;
  * ```php
  * 'upload' => [
  *     'class' => 'ivankff\yii2UploadImages\UploadBehavior',
- *     'single' => [
- *         'mainImage' => $this->_ar->images->getMain(),
- *     ],
- *     'multiple' => [
- *         'dopImages' => $this->_ar->images->getDop(),
- *     ],
+ *     'formAttribute' => 'uploadImage',
+ *     'initFiles' => $this->_ar->images->getAll(),
  * ],
  * ```
  */
 class UploadBehavior extends Behavior
 {
 
-    /**
-     * @var array список атрибутов, где возможна только одно изображение
-     */
-    public $single = [];
-    /**
-     * @var array список атрибутов, где возможно несколько изображений
-     */
-    public $multiple = [];
+    /** @var string атрибут формы, отвечающий за закачку */
+    public $formAttribute;
+    /** @var string|null ключ поведения, ТОЛЬКО для ActiveRecord */
+    public $behaviorKey;
+    /** @var string[] уже закаченные фотки, ТОЛЬКО не для ActiveRecord */
+    public $initFiles = [];
 
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $_files;
-    /**
-     * @var array
-     */
-    protected $_keys = [];
-
+    /** @var array */
+    protected $_keys;
 
     /**
      * @inheritdoc
@@ -86,18 +70,14 @@ class UploadBehavior extends Behavior
     }
 
     /**
-     * @param $attribute
-     * @return string|null|string[]
+     * @return string[]
      */
-    public function getFiles($attribute)
+    public function getFiles()
     {
         if (null === $this->_files)
             throw new InvalidCallException('Method can be called after validate()');
 
-        if (!isset($this->_files[$attribute]))
-            throw new InvalidArgumentException();
-
-        return $this->_files[$attribute]['type'] === 'multiple' ? $this->_files[$attribute]['files'] : ($this->_files[$attribute]['files'] ? reset($this->_files[$attribute]['files']) : null);
+        return $this->_files;
     }
 
     /**
@@ -105,13 +85,7 @@ class UploadBehavior extends Behavior
      */
     public function beforeValidate($event)
     {
-        foreach ($this->_files as $attribute => $files) {
-            if ($files['type'] === 'multiple') {
-                $this->owner->{$attribute} = UploadedFile::getInstances($this->owner, $attribute);
-            } else {
-                $this->owner->{$attribute} = UploadedFile::getInstance($this->owner, $attribute);
-            }
-        }
+        $this->owner->{$this->formAttribute} = UploadedFile::getInstances($this->owner, $this->formAttribute);
     }
 
     /**
@@ -128,34 +102,27 @@ class UploadBehavior extends Behavior
      */
     public function afterValidate($event)
     {
-        foreach ($this->_files as $attribute => $files) {
-            $keys = StringHelper::explode($this->owner->{"{$attribute}_keys"}, ',', true, true);
+        $keys = StringHelper::explode($this->owner->{"{$this->formAttribute}_keys"}, ',', true, true);
 
-            if ($this->_files[$attribute]['type'] === 'multiple') {
-                foreach ($this->owner->{$attribute} as $tmpFile) {
-                    $key = max(array_keys($this->_files[$attribute]['files']) + [0]) + 1;
-                    $this->_files[$attribute]['files'][$key] = $tmpFile->tempName;
-                    $keys[] = $key;
-                }
-            } elseif ($this->owner->{$attribute}) {
-                $this->_files[$attribute]['files'] = [1 => $this->owner->{$attribute}->tempName];
-                $keys[] = 1;
-            }
-
-            $this->_files[$attribute]['files'] = array_filter($this->_files[$attribute]['files'], function($item, $i) use ($keys){
-                return in_array($i, $keys);
-            }, ARRAY_FILTER_USE_BOTH);
-
-            uksort($this->_files[$attribute]['files'], function ($a, $b) use ($keys) {
-                $ka = array_search($a, $keys);
-                $kb = array_search($b, $keys);
-
-                if ($ka === $kb)
-                    return 0;
-
-                return ($ka < $kb) ? -1 : 1;
-            });
+        foreach ($this->owner->{$this->formAttribute} as $tmpFile) {
+            $key = max(array_keys($this->_files) + [0]) + 1;
+            $this->_files[$key] = $tmpFile->tempName;
+            $keys[] = $key;
         }
+
+        $this->_files = array_filter($this->_files, function($item, $i) use ($keys){
+            return in_array($i, $keys);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        uksort($this->_files, function ($a, $b) use ($keys) {
+            $ka = array_search($a, $keys);
+            $kb = array_search($b, $keys);
+
+            if ($ka === $kb)
+                return 0;
+
+            return ($ka < $kb) ? -1 : 1;
+        });
     }
 
     /**
@@ -164,10 +131,10 @@ class UploadBehavior extends Behavior
     public function __get($name)
     {
         if (false !== $attribute = $this->_getAttributeForKey($name)){
-            if (! isset($this->_keys[$attribute]))
-                $this->_keys[$attribute] = implode(',', array_keys($this->_files[$attribute]['files']));
+            if (null === $this->_keys)
+                $this->_keys = implode(',', array_keys($this->_files));
 
-            return $this->_keys[$attribute];
+            return $this->_keys;
         }
 
         return parent::__get($name);
@@ -179,7 +146,7 @@ class UploadBehavior extends Behavior
     public function __set($name, $value)
     {
         if (false !== $attribute = $this->_getAttributeForKey($name)) {
-            $this->_keys[$attribute] = $value;
+            $this->_keys = $value;
             return;
         }
 
@@ -217,10 +184,7 @@ class UploadBehavior extends Behavior
         if (StringHelper::endsWith($key, '_keys')) {
             $attribute = mb_substr($key, 0, -5);
 
-            if (array_key_exists($attribute, $this->single))
-                return $attribute;
-
-            if (array_key_exists($attribute, $this->multiple))
+            if ($attribute === $this->formAttribute)
                 return $attribute;
         }
 
@@ -228,44 +192,32 @@ class UploadBehavior extends Behavior
     }
 
     /**
-     * @throws
      */
     private function _fillFiles()
     {
         $this->_files = [];
-
-        $images = null;
         $this->owner->ensureBehaviors();
 
-        foreach ($this->owner->getBehaviors() as $key => $behavior) {
-            if ($behavior instanceof EntityImagesBehavior) {
-                $images = $behavior->getImages();
+        if ($this->owner instanceof ActiveRecord) {
+            $behavior = $this->owner->getBehavior($this->behaviorKey);
+            if (! $behavior instanceof ImagesBehavior)
+                throw new InvalidConfigException("Behavior must be set for ActiveRecord");
 
-                if (! $this->owner->isNewRecord)
-                    $images->load($this->owner->primaryKey);
-            }
+            $images = $behavior->getImages();
+
+            if (! $this->owner->isNewRecord)
+                $images->load($this->owner->primaryKey);
+
+            $this->_files = $images->getAll();
+        } else {
+            $this->_files = $this->initFiles;
         }
 
-        foreach ($this->single as $attribute => $file) {
-            if ($images && in_array($file, array_keys($images->types())))
-                $file = $images->get($file);
+        if (! $this->owner->isAttributeSafe($this->formAttribute))
+            throw new InvalidConfigException("Attribute {$this->formAttribute} should be safe");
 
-            $this->_files[$attribute] = ['type' => 'single', 'files' => $file ? [1 => $file] : []];
-        }
-        foreach ($this->multiple as $attribute => $files) {
-            if ($images && is_string($files) && in_array($files, array_keys($images->types())))
-                $files = $images->getAll($files);
-
-            $this->_files[$attribute] = ['type' => 'multiple', 'files' => $files];
-        }
-
-        foreach ($this->_files as $attribute => $files) {
-            if (! $this->owner->isAttributeSafe($attribute))
-                throw new InvalidConfigException("Attribute {$attribute} should be safe");
-
-            if (! $this->owner->isAttributeSafe("{$attribute}_keys"))
-                throw new InvalidConfigException("Attribute {$attribute}_keys should be safe");
-        }
+        if (! $this->owner->isAttributeSafe("{$this->formAttribute}_keys"))
+            throw new InvalidConfigException("Attribute {$this->formAttribute}_keys should be safe");
     }
 
 }

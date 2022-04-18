@@ -3,6 +3,8 @@
 namespace ivankff\yii2UploadImages;
 
 use yii\base\Model;
+use yii\caching\CacheInterface;
+use yii\caching\DummyCache;
 use yii\helpers\ArrayHelper;
 use yii\image\drivers\Image;
 
@@ -13,7 +15,6 @@ class ImageActionRequest extends Model
 
     public $id;
     public $i;
-    public $type;
 
     /* PhpThumb parameters */
     public $w;
@@ -28,15 +29,10 @@ class ImageActionRequest extends Model
     public function rules()
     {
         return [
-            [['i'], 'default', 'value' => 1, 'when' => function($model) {
-                /** @var self $model */
-                return $model->type === PluralImages::TYPE_MAIN;
-            }],
             [['i', 'w', 'h'], 'integer', 'min' => 1],
             [['f'], 'in', 'range' => ['png', 'jpg', 'jpeg', 'gif']],
             [['zc'], 'boolean'],
-            [['id', 'type', 'hash'], 'string'],
-            [['type', 'i'], 'required'],
+            [['id', 'hash'], 'string'],
         ];
     }
 
@@ -53,7 +49,6 @@ class ImageActionRequest extends Model
     public function getCacheFilename($filePath)
     {
         $params = ArrayHelper::toArray($this);
-        ArrayHelper::remove($params, 'type');
 
         if (!is_file($filePath))
             return null;
@@ -61,7 +56,11 @@ class ImageActionRequest extends Model
         $params['filemtime'] = filemtime($filePath);
         $aFileInfo = pathinfo($filePath);
 
-        return \Yii::$app->cache->buildKey($params) . "." . $aFileInfo['extension'];
+        $cache = \Yii::$app->get('cache', false);
+        if (! $cache instanceof CacheInterface)
+            $cache = new DummyCache();
+
+        return $cache->buildKey($params) . "." . $aFileInfo['extension'];
     }
 
     /**
@@ -97,7 +96,12 @@ class ImageActionRequest extends Model
             $param = (string) $param;
 
         $params['securityKey'] = ArrayHelper::getValue(\Yii::$app->params, 'images.securityKey');
-        return \Yii::$app->cache->buildKey($params);
+
+        $cache = \Yii::$app->get('cache', false);
+        if (! $cache instanceof CacheInterface)
+            $cache = new DummyCache();
+
+        return $cache->buildKey($params);
     }
 
 }

@@ -29,31 +29,25 @@ Application params
 
 Active Record Entity
 ------------------------------
+
 ```php
 /**
- * @property-read PluralImages $images
+ * @property-read ImagesInterface $images
  */
-class Product extends ActiveRecord implements ImagesEntityInterface
+class Product extends ActiveRecord
 {
 
     public function behaviors()
     {
         return [
             'images' => [
-                'class' => 'ivankff\yii2UploadImages\EntityImagesBehavior',
-                'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
-                'dir' => static::getImagesDir(),
-                'widen' => static::getImagesWiden(),
+                'class' => 'ivankff\yii2UploadImages\ImagesBehavior',
+                'dir' => '@image/product',
+                'widen' => (int)ArrayHelper::getValue(Yii::$app->params, 'image.widen', 0),
             ],
         ];
     }
     
-    /** @return string */
-    public static function getImagesDir() { return Yii::getAlias('@image/product'); }
-
-    /** @return int */
-    public static function getImagesWiden() { return (int)ArrayHelper::getValue(Yii::$app->params, 'image.widen', 0); }
-
 }
 ```
 
@@ -72,15 +66,12 @@ Backend form model
 ------------------------------
 ```php
 /**
- * @method string|null|string[] getFiles($attribute)
+ * @method string[] getFiles($attribute)
  */
 class ProductForm extends Model {
 
     /** @var UploadedFile */
-    public $mainImage;
-    
-    /** @var UploadedFile[] */
-    public $dopImages;
+    public $uploadImages;
     
     /**
      * {@inheritdoc}
@@ -90,12 +81,8 @@ class ProductForm extends Model {
         return [
             'upload' => [
                 'class' => 'ivankff\yii2UploadImages\UploadBehavior',
-                'single' => [
-                    'mainImage' => $this->_ar->images->getMain(),
-                ],
-                'multiple' => [
-                    'dopImages' => $this->_ar->images->getDop(),
-                ],
+                'formAttribute' => 'uploadImages',
+                'initFiles' => $this->_ar->images->getAll(),
             ],
         ];
     }
@@ -106,9 +93,8 @@ class ProductForm extends Model {
     public function rules()
     {
         return [
-            [['mainImage_keys', 'dopImages_keys'], 'string'],
-            [['mainImage'], 'image'],
-            [['dopImages'], 'image', 'maxFiles' => 10],
+            [['uploadImages_keys'], 'string'],
+            [['uploadImages'], 'image', 'maxFiles' => 20],
         ];
     }
 
@@ -118,8 +104,7 @@ class ProductForm extends Model {
     public function attributeLabels()
     {
         return [
-            'mainImage' => 'Основное изображение',
-            'dopImages' => 'Дополнительные изображения',
+            'uploadImages' => 'Изображения',
         ];
     }
 
@@ -132,8 +117,7 @@ class ProductForm extends Model {
         if ($runValidation && !$this->validate())
             return false;
 
-        $this->_ar->images->replaceMain($this->getFiles('mainImage'));
-        $this->_ar->images->replaceDop($this->getFiles('dopImages'));
+        $this->_ar->images->replace($this->getFiles('uploadImages'));
 
         return $this->_ar->save($runValidation);
     }
@@ -143,27 +127,17 @@ class ProductForm extends Model {
 Backend _form view
 ------------------------------
 ```php
-$mainImages = $dopImages = [];
+$uploadImages = [];
 
-if ($model->getFiles('mainImage'))
-    $mainImages[] = Yii::$app->router->productThumbnailMain($model->product);
+foreach ($model->getFiles('uploadImages') as $i => $image)
+    $uploadImages[] = Yii::$app->router->productThumbnailDop($model->product, $i);
 
-foreach ($model->getFiles('dopImages') as $i => $image)
-    $dopImages[] = Yii::$app->router->productThumbnailDop($model->product, $i+1);
-
-echo $form->field($model, 'mainImage')->widget('ivankff\yii2UploadImages\FileInputWidget', [
-    'pluginOptions' => [
-        'initialPreview' => $mainImages,
-        'overwriteInitial' => true,
-    ]
-]);
-
-echo $form->field($model, 'dopImages[]')->widget('ivankff\yii2UploadImages\FileInputWidget', [
+echo $form->field($model, 'uploadImages[]')->widget('ivankff\yii2UploadImages\FileInputWidget', [
     'options' => [
         'multiple' => true,
     ],
     'pluginOptions' => [
-        'initialPreview' => $dopImages,
+        'initialPreview' => $uploadImages,
         'overwriteInitial' => false,
     ]
 ]);
@@ -179,60 +153,36 @@ class Router extends Component
      * @var string компонент-менеджер фронтенда
      */
     public $urlManagerFrontend = 'urlManagerFrontend';
-    /**
-     * @var string компонент-менеджер фронтенда
-     */
-    public $urlManagerBackend = 'urlManagerBackend';
 
     /** @var UrlManager */
     private $_frontendManager;
-
-    /** @var UrlManager */
-    private $_backendManager;
     
-    /**
-     * @param Product $product
-     * @param array $params
-     * @return null|string
-     */
-    public function productThumbnailMain(Product $product, $params = [])
-    {
-        $req = $this->_getImageRequest($params, $product->id, PluralImages::TYPE_MAIN);
-
-        return $this->_frontendManager->createUrl(ArrayHelper::merge(
-            ['/catalog/product/picture-main', 'name' => Inflector::slug($product->title)],
-            $req->getRequestParams(['type'])
-        ));
-    }
-
     /**
      * @param Product $product
      * @param array $params
      * @param int $i
      * @return null|string
      */
-    public function productThumbnailDop(Product $product, int $i, $params = [])
+    public function productThumbnail(Product $product, int $i, $params = [])
     {
-        $req = $this->_getImageRequest($params, $product->id, PluralImages::TYPE_DOP, $i);
+        $req = $this->_getImageRequest($params, $product->id, $i);
 
         return $this->_frontendManager->createUrl(ArrayHelper::merge(
-            ['/catalog/product/picture-dop', 'name' => Inflector::slug($product->title)],
-            $req->getRequestParams(['type'])
+            ['/catalog/product/picture', 'name' => Inflector::slug($product->title)],
+            $req->getRequestParams()
         ));
     }
     
     /**
      * @param array $params
      * @param int $id
-     * @param string $type
      * @param int|null $i
      * @return \ivankff\yii2UploadImages\ImageActionRequest
      * @throws
      */
-    private function _getImageRequest($params, $id, $type, $i = null)
+    private function _getImageRequest($params, $id, $i = null)
     {
         $params['class'] = 'ivankff\yii2UploadImages\ImageActionRequest';
-        $params['type'] = $type;
         $params['id'] = $id;
         $params['i'] = $i;
 
@@ -248,20 +198,17 @@ Frontend controller
 public function actions()
 {
     return [
-        'picture-main' => [
+        'picture' => [
             'class' => 'ivankff\yii2UploadImages\ImageAction',
-            'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
-            'dir' => Product::getImagesDir(),
-            'widen' => Product::getImagesWiden(),
-            'type' => PluralImages::TYPE_MAIN,
-        ],
-        'picture-dop' => [
-            'class' => 'ivankff\yii2UploadImages\ImageAction',
-            'imagesClass' => 'ivankff\yii2UploadImages\PluralImages',
-            'dir' => Product::getImagesDir(),
-            'widen' => Product::getImagesWiden(),
-            'type' => PluralImages::TYPE_DOP,
+            'activeRecordClass' => 'common\entities\Product\Product',
         ],
     ];
 }
+```
+
+_urlManager.php config
+------------------------------
+```php
+['pattern' => 'picture/<name>__p<id:\d+>m.jpg', 'route' => 'catalog/product/picture', 'suffix' => false, 'defaults' => ['i' => 1]],
+['pattern' => 'picture/<name>__p<id:\d+>d<i:\d+>.jpg', 'route' => 'catalog/product/picture', 'suffix' => false],
 ```

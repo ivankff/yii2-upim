@@ -11,21 +11,21 @@ use yii\helpers\ArrayHelper;
 /**
  * @property ActiveRecord $owner
  */
-class EntityImagesBehavior extends Behavior
+class ImagesBehavior extends Behavior
 {
 
-    /**
-     * @var array|string
-     */
-    public $imagesClass;
-    /**
-     * @var string
-     */
+    /** @var array|string */
+    public $imagesClass = "ivankff\yii2UploadImages\Images";
+    /** @var string @images/product */
     public $dir;
-    /**
-     * @var int
-     */
-    public $widen = 0;
+    /** @var int обрезка по большей стороне */
+    public $widen = 2000;
+    /** @var int максимальное кол-во фоток */
+    public $maxCount = 20;
+    /** @var string суффикс для имет файлов */
+    public $suffix = '';
+    /** @var string какие фотки удалять, если кол-во превышает максимальное: из начала, из конца, со второй фотки */
+    public $trim = ImagesInterface::TRIM_SECOND;
 
     /** @var ImagesInterface */
     private $_images;
@@ -69,19 +69,19 @@ class EntityImagesBehavior extends Behavior
 
     /**
      * @return ImagesInterface
-     * @throws
      */
     private function _getImages()
     {
         if (null === $this->_images) {
             $config = is_array($this->imagesClass) ? $this->imagesClass : ['class' => $this->imagesClass];
-            $config = ArrayHelper::merge(['dir' => $this->dir, 'widen' => $this->widen], $config);
+            $config = ArrayHelper::merge($config, ['dir' => \Yii::getAlias($this->dir), 'widen' => $this->widen, 'suffix' => $this->suffix, 'maxCount' => $this->maxCount, 'trim' => $this->trim]);
 
             $this->_images = \Yii::createObject($config);
 
             if (! $this->owner->isNewRecord)
                 $this->_images->load($this->owner->primaryKey);
         }
+
         return $this->_images;
     }
 

@@ -2,13 +2,15 @@
 
 namespace ivankff\yii2UploadImages;
 
+/**
+ */
 interface ImagesInterface
 {
 
-    /**
-     * @return array
-     */
-    public function types();
+    const TRIM_START = 'start';
+    const TRIM_SECOND = 'second';
+    const TRIM_END = 'end';
+
     /**
      * @param string|int $id идентификатор AR
      * @return bool
@@ -24,29 +26,38 @@ interface ImagesInterface
      */
     public function clear();
     /**
-     * @param string $type
+     * @return bool
+     */
+    public function isEmpty();
+    /**
      * @param int $i - номер фоты >= 1
      * @return string|null
      */
-    public function get($type, $i = 1);
+    public function getOne($i);
     /**
-     * @param string $type
-     * @return string[]
+     * @return string|null - первая фотка
      */
-    public function getAll($type);
+    public function getFirst();
     /**
-     * @param string $type
+     * @return string[] - все остальные фотки, начиная со второй
+     * индексы сохранены, т.е. начинается с 2
+     */
+    public function getDop();
+    /**
+     * @return string[] - все фотки
+     */
+    public function getAll();
+    /**
      * @param string|array $files один или несколько файлов
      * @param bool $keepOriginal копировать или перемещать оригинал
      * @return bool
      */
-    public function add($type, $files, $keepOriginal = false);
+    public function add($files, $keepOriginal = false);
     /**
-     * @param string $type
      * @param string|array $files один или несколько файлов
      * @param bool $keepOriginal копировать или перемещать оригинал
      * @return null
      */
-    public function replace($type, $files, $keepOriginal = false);
+    public function replace($files, $keepOriginal = false);
 
 }
