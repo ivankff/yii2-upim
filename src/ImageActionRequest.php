@@ -30,11 +30,14 @@ class ImageActionRequest extends Model
     {
         return [
             [['i', 'w', 'h'], 'integer', 'min' => 1],
-            [['f'], 'in', 'range' => ['png', 'jpg', 'jpeg', 'gif']],
+            [['f'], 'in', 'range' => ['png', 'jpg', 'jpeg', 'gif', 'webp']],
             [['zc'], 'boolean'],
             [['id', 'hash'], 'string'],
         ];
     }
+
+    /** @return int */
+    public function getI() { return (string)$this->i === "" ? 1 : (int)$this->i; }
 
     /** @return bool */
     public function checkHash() { return $this->hash === $this->_getHash(); }
@@ -43,7 +46,7 @@ class ImageActionRequest extends Model
     public function getMasterDimension() { return $this->zc ? Image::CROP : Image::AUTO; }
 
     /**
-     * @param $filePath
+     * @param string $filePath
      * @return null|string
      */
     public function getCacheFilename($filePath)
@@ -60,7 +63,7 @@ class ImageActionRequest extends Model
         if (! $cache instanceof CacheInterface)
             $cache = new DummyCache();
 
-        return $cache->buildKey($params) . "." . $aFileInfo['extension'];
+        return "{$cache->buildKey($params)}.{$aFileInfo['extension']}";
     }
 
     /**
