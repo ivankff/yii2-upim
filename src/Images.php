@@ -27,7 +27,7 @@ class Images extends BaseObject implements ImagesInterface
     /** @var string какие фотки удалять, если кол-во превышает максимальное: из начала, из конца, со второй фотки */
     public $trim = ImagesInterface::TRIM_SECOND;
     /** @var string[] возможные расширения для поиска файлов в папке */
-    public $extensions = ['jpg', 'png', 'jpeg', 'gif'];
+    public $extensions = ['jpg', 'png', 'jpeg', 'gif', 'webp'];
 
     /** @var array */
     private $_images = [];
