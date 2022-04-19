@@ -185,6 +185,7 @@ class Images extends BaseObject implements ImagesInterface
 
                             try {
                                 $save = $image->save($newFile, 100);
+                                touch($newFile);
                             } catch (ErrorException $e) {
                                 \Yii::warning("Файл {$file} не был сохранен с ресайзом в {$newFile}", __FUNCTION__);
                             }
@@ -217,8 +218,10 @@ class Images extends BaseObject implements ImagesInterface
             }
         }
 
-        foreach ($ftmp as $tmp => $file)
+        foreach ($ftmp as $tmp => $file) {
             rename($tmp, $file);
+            touch($file);
+        }
 
         $this->_keepOriginal = null;
         $this->_images = $this->_load($id);
