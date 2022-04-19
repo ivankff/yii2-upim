@@ -163,7 +163,7 @@ class ImageAction extends Action
         }
 
         $info = getimagesize($image);
-        \Yii::$app->response->headers->set('Content-Type', $info[2]);
+        \Yii::$app->response->headers->set('Content-Type', image_type_to_mime_type($info[2]));
         return file_get_contents($image);
     }
 
