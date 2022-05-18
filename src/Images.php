@@ -44,6 +44,7 @@ class Images extends BaseObject implements ImagesInterface
      */
     public function init()
     {
+        $this->dir = Yii::getAlias($this->dir);
         Assertion::directory($this->dir);
         Assertion::integer($this->widen);
         Assertion::notEmpty($this->extensions);
@@ -332,7 +333,7 @@ class Images extends BaseObject implements ImagesInterface
      */
     private function _getImagePath($id, $num, $extension)
     {
-        return $this->_getDirToId($id) . DIRECTORY_SEPARATOR . $id . '-' . ($this->suffix ?: null) . $num . '.' . $extension;
+        return $this->_getDirToId($id) . "/" . $id . '-' . ($this->suffix ?: null) . $num . '.' . $extension;
     }
 
     /**
@@ -344,8 +345,8 @@ class Images extends BaseObject implements ImagesInterface
     {
         $dir = $this->dir;
         $id = basename($id);
-        if (is_numeric($id)) $dir = $dir . DIRECTORY_SEPARATOR . floor($id/1000);
-        else $dir = $dir . DIRECTORY_SEPARATOR . mb_substr($id, 0, 1);
+        if (is_numeric($id)) $dir = $dir . "/" . floor($id/1000);
+        else $dir = $dir . "/" . mb_substr($id, 0, 1);
         FileHelper::createDirectory($dir);
         return $dir;
     }

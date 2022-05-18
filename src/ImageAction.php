@@ -83,7 +83,7 @@ class ImageAction extends Action
             return $this->_render($filePath, $params);
 
         $cacheFilename = $params->getCacheFilename($filePath);
-        $cachePath = Yii::getAlias($this->cachePath . DIRECTORY_SEPARATOR . mb_substr($cacheFilename, 0, 2) . DIRECTORY_SEPARATOR . $cacheFilename);
+        $cachePath = Yii::getAlias($this->cachePath . "/" . mb_substr($cacheFilename, 0, 2) . "/" . $cacheFilename);
 
         if ($this->cacheExpire > 0 && file_exists($cachePath) && (filemtime($cachePath) + $this->cacheExpire) < time())
             unlink($cachePath);
