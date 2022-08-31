@@ -1,6 +1,6 @@
 <?php
 
-namespace ivankff\yii2UploadImages;
+namespace ivankff\yii2UploadImages\behaviors;
 
 use yii\base\Behavior;
 use yii\base\Event;
@@ -17,17 +17,19 @@ use yii\web\UploadedFile;
  *
  * ActiveRecord behavior element:
  * ```php
+ * property-read array $uploadImageFiles
  * 'upload' => [
- *     'class' => 'ivankff\yii2UploadImages\UploadBehavior',
+ *     'class' => 'ivankff\yii2UploadFiles\behaviors\UploadBehavior',
  *     'formAttribute' => 'uploadImage',
- *     'behaviorKey' => 'images',
+ *     'attributeName' => 'images',
  * ],
  * ```
  *
  * Not ActiveRecord (Model) behavior element:
+ * property-read array $uploadImageFiles
  * ```php
  * 'upload' => [
- *     'class' => 'ivankff\yii2UploadImages\UploadBehavior',
+ *     'class' => 'ivankff\yii2UploadFiles\behaviors\UploadBehavior',
  *     'formAttribute' => 'uploadImage',
  *     'initFiles' => $this->_ar->images->getAll(),
  * ],
@@ -38,8 +40,8 @@ class UploadBehavior extends Behavior
 
     /** @var string атрибут формы, отвечающий за закачку */
     public $formAttribute;
-    /** @var string|null ключ поведения, ТОЛЬКО для ActiveRecord */
-    public $behaviorKey;
+    /** @var string|null атрибут для обращения к файлам, ТОЛЬКО для ActiveRecord */
+    public $attributeName;
     /** @var string[] уже закаченные фотки, ТОЛЬКО не для ActiveRecord */
     public $initFiles = [];
 
@@ -70,17 +72,6 @@ class UploadBehavior extends Behavior
     }
 
     /**
-     * @return string[]
-     */
-    public function getFiles()
-    {
-        if (null === $this->_files)
-            throw new InvalidCallException('Method can be called after validate()');
-
-        return $this->_files;
-    }
-
-    /**
      * @param ModelEvent $event
      */
     public function beforeValidate($event)
@@ -104,13 +95,16 @@ class UploadBehavior extends Behavior
     {
         $keys = StringHelper::explode($this->owner->{"{$this->formAttribute}_keys"}, ',', true, true);
 
+        if ($this->owner->{$this->formAttribute} instanceof UploadedFile)
+            $this->owner->{$this->formAttribute} = [$this->owner->{$this->formAttribute}];
+
         foreach ($this->owner->{$this->formAttribute} as $tmpFile) {
             $key = max(array_keys($this->_files) + [0]) + 1;
-            $this->_files[$key] = $tmpFile->tempName;
+            $this->_files[$key] = [$tmpFile->tempName, $tmpFile->name];
             $keys[] = $key;
         }
 
-        $this->_files = array_filter($this->_files, function($item, $i) use ($keys){
+        $this->_files = array_filter($this->_files, function($item, $i) use ($keys) {
             return in_array($i, $keys);
         }, ARRAY_FILTER_USE_BOTH);
 
@@ -130,11 +124,18 @@ class UploadBehavior extends Behavior
      */
     public function __get($name)
     {
-        if (false !== $attribute = $this->_getAttributeForKey($name)){
+        if (false !== $attribute = $this->_getAttributeForKey($name)) {
             if (null === $this->_keys)
                 $this->_keys = implode(',', array_keys($this->_files));
 
             return $this->_keys;
+        }
+
+        if (false !== $attribute = $this->_getAttributeForFiles($name)) {
+            if (null === $this->_files)
+                throw new InvalidCallException('Method can be called after validate()');
+
+            return $this->_files;
         }
 
         return parent::__get($name);
@@ -159,6 +160,9 @@ class UploadBehavior extends Behavior
     public function canGetProperty($name, $checkVars = true)
     {
         if (false !== $attribute = $this->_getAttributeForKey($name))
+            return true;
+
+        if (false !== $attribute = $this->_getAttributeForFiles($name))
             return true;
 
         return parent::canGetProperty($name, $checkVars);
@@ -192,6 +196,22 @@ class UploadBehavior extends Behavior
     }
 
     /**
+     * @param string $key
+     * @return bool|string
+     */
+    private function _getAttributeForFiles($key)
+    {
+        if (StringHelper::endsWith($key, 'Files')) {
+            $attribute = mb_substr($key, 0, -5);
+
+            if ($attribute === $this->formAttribute)
+                return $attribute;
+        }
+
+        return false;
+    }
+
+    /**
      */
     private function _fillFiles()
     {
@@ -199,25 +219,21 @@ class UploadBehavior extends Behavior
         $this->owner->ensureBehaviors();
 
         if ($this->owner instanceof ActiveRecord) {
-            $behavior = $this->owner->getBehavior($this->behaviorKey);
-            if (! $behavior instanceof ImagesBehavior)
-                throw new InvalidConfigException("Behavior must be set for ActiveRecord");
-
-            $images = $behavior->getImages();
+            $filesComponent = $this->{$this->attributeName};
 
             if (! $this->owner->isNewRecord)
-                $images->load($this->owner->primaryKey);
+                $filesComponent->load($this->owner->primaryKey);
 
-            $this->_files = $images->getAll();
+            $this->_files = $filesComponent->getAll();
         } else {
             $this->_files = $this->initFiles;
         }
 
         if (! $this->owner->isAttributeSafe($this->formAttribute))
-            throw new InvalidConfigException("Attribute {$this->formAttribute} should be safe");
+            throw new InvalidConfigException("Attribute `{$this->formAttribute}` should be safe");
 
         if (! $this->owner->isAttributeSafe("{$this->formAttribute}_keys"))
-            throw new InvalidConfigException("Attribute {$this->formAttribute}_keys should be safe");
+            throw new InvalidConfigException("Attribute `{$this->formAttribute}_keys` should be safe");
     }
 
 }

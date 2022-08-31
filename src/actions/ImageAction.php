@@ -1,7 +1,8 @@
 <?php
 
-namespace ivankff\yii2UploadImages;
+namespace ivankff\yii2UploadImages\actions;
 
+use ivankff\yii2UploadImages\FilesInterface;
 use Yii;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
@@ -23,9 +24,9 @@ class ImageAction extends Action
      */
     public $activeRecordClass;
     /**
-     * @var string ключ поведения для ImagesBehavior
+     * @var string атрибут ActiveRecord для обращения к FilesInterface
      */
-    public $behaviorKey = 'images';
+    public $attributeName = 'images';
 
     /** @var bool check security hash */
     public $checkHash = true;
@@ -49,8 +50,8 @@ class ImageAction extends Action
         if (! class_exists($this->activeRecordClass))
             throw new InvalidArgumentException('"activeRecordClass" must be configurated');
 
-        if (empty($this->behaviorKey))
-            throw new InvalidArgumentException('"behaviorKey" must be configurated');
+        if (empty($this->attributeName))
+            throw new InvalidArgumentException('"attributeName" must be configurated');
 
         if ($this->controller && $this->cacheExpire > 0) {
             $this->controller->attachBehavior("{$this->id}-cache", [
@@ -116,10 +117,10 @@ class ImageAction extends Action
             $this->_params = new ImageActionRequest();
 
             if (! ($this->_params->load(Yii::$app->request->get(), '') && $this->_params->validate()))
-                throw new BadRequestHttpException('Invalid request');
+                throw new BadRequestHttpException("Invalid request");
 
             if ($this->checkHash && ! $this->_params->checkHash())
-                throw new BadRequestHttpException('Invalid security hash');
+                throw new BadRequestHttpException("Invalid security hash");
         }
 
         return $this->_params;
@@ -132,15 +133,15 @@ class ImageAction extends Action
     {
         if (null === $this->_filePath) {
             /** @var ActiveRecord $ar */
-            /** @var ImagesInterface $images */
+            /** @var FilesInterface $images */
             $params = $this->getParams();
             $ar = new $this->activeRecordClass;
-            $images = $ar->getBehavior($this->behaviorKey)->getImages();
+            $images = $ar->{$this->attributeName};
             $images->load($params->id);
             $this->_filePath = $images->getOne($params->getI());
 
             if (! $this->_filePath)
-                throw new NotFoundHttpException('Image not found');
+                throw new NotFoundHttpException("Image not found");
 
             $this->_filePath = realpath($this->_filePath);
         }
@@ -158,12 +159,12 @@ class ImageAction extends Action
         \Yii::$app->response->format = Response::FORMAT_RAW;
 
         if ($image instanceof Image) {
-            \Yii::$app->response->headers->set('Content-Type', $image->mime);
+            \Yii::$app->response->headers->add('Content-Type', $image->mime);
             return $image->render($params->f, $this->imageQuality);
         }
 
         $info = getimagesize($image);
-        \Yii::$app->response->headers->set('Content-Type', image_type_to_mime_type($info[2]));
+        \Yii::$app->response->headers->add('Content-Type', image_type_to_mime_type($info[2]));
         return file_get_contents($image);
     }
 

@@ -4,7 +4,7 @@ namespace ivankff\yii2UploadImages;
 
 /**
  */
-interface ImagesInterface
+interface FilesInterface
 {
 
     const TRIM_START = 'start';
@@ -30,21 +30,25 @@ interface ImagesInterface
      */
     public function isEmpty();
     /**
-     * @param int $i - номер фоты >= 1
+     * @return string
+     */
+    public function getDir();
+    /**
+     * @param int $i - номер файла >= 1
      * @return string|null
      */
     public function getOne($i);
     /**
-     * @return string|null - первая фотка
+     * @return string|null - первый файл
      */
     public function getFirst();
     /**
-     * @return string[] - все остальные фотки, начиная со второй
+     * @return string[] - все остальные файлы, начиная со второго
      * индексы сохранены, т.е. начинается с 2
      */
     public function getDop();
     /**
-     * @return string[] - все фотки
+     * @return string[] - все файлы
      */
     public function getAll();
     /**

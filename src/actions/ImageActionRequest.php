@@ -1,6 +1,6 @@
 <?php
 
-namespace ivankff\yii2UploadImages;
+namespace ivankff\yii2UploadImages\actions;
 
 use yii\base\Model;
 use yii\caching\CacheInterface;

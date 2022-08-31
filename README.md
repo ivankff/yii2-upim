@@ -41,7 +41,7 @@ class Product extends ActiveRecord
     {
         return [
             'images' => [
-                'class' => 'ivankff\yii2UploadImages\ImagesBehavior',
+                'class' => 'ivankff\yii2UploadImages\behaviors\ImagesBehavior',
                 'dir' => '@image/product',
                 'widen' => (int)ArrayHelper::getValue(Yii::$app->params, 'image.widen', 0),
             ],
@@ -57,7 +57,7 @@ Backend controller
 public function actions()
 {
     return [
-        'delete-image' => 'ivankff\yii2UploadImages\DeleteImageAction',
+        'delete-file' => 'ivankff\yii2UploadImages\actions\DeleteFileAction',
     ];
 }
 ```
@@ -66,7 +66,7 @@ Backend form model
 ------------------------------
 ```php
 /**
- * @method string[] getFiles($attribute)
+ * @property-read string[] $uploadImagesFiles
  */
 class ProductForm extends Model {
 
@@ -80,7 +80,7 @@ class ProductForm extends Model {
     {
         return [
             'upload' => [
-                'class' => 'ivankff\yii2UploadImages\UploadBehavior',
+                'class' => 'ivankff\yii2UploadImages\behaviors\UploadBehavior',
                 'formAttribute' => 'uploadImages',
                 'initFiles' => $this->_ar->images->getAll(),
             ],
@@ -117,7 +117,7 @@ class ProductForm extends Model {
         if ($runValidation && !$this->validate())
             return false;
 
-        $this->_ar->images->replace($this->getFiles('uploadImages'));
+        $this->_ar->images->replace($this->uploadImagesFiles);
 
         return $this->_ar->save($runValidation);
     }
@@ -129,7 +129,7 @@ Backend _form view
 ```php
 $uploadImages = [];
 
-foreach ($model->getFiles('uploadImages') as $i => $image)
+foreach ($model->uploadImagesFiles as $i => $image)
     $uploadImages[] = Yii::$app->router->productThumbnailDop($model->product, $i);
 
 echo $form->field($model, 'uploadImages[]')->widget('ivankff\yii2UploadImages\FileInputWidget', [
@@ -182,7 +182,7 @@ class Router extends Component
      */
     private function _getImageRequest($params, $id, $i = null)
     {
-        $params['class'] = 'ivankff\yii2UploadImages\ImageActionRequest';
+        $params['class'] = 'ivankff\yii2UploadImages\actions\ImageActionRequest';
         $params['id'] = $id;
         $params['i'] = $i;
 
@@ -199,7 +199,7 @@ public function actions()
 {
     return [
         'picture' => [
-            'class' => 'ivankff\yii2UploadImages\ImageAction',
+            'class' => 'ivankff\yii2UploadImages\actions\ImageAction',
             'activeRecordClass' => 'common\entities\Product\Product',
         ],
     ];

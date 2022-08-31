@@ -20,10 +20,11 @@ class FileInputWidget extends \kartik\widgets\FileInput
         $previews = ArrayHelper::getValue($config, 'pluginOptions.initialPreview');
 
         $keys = [];
-        foreach ($previews as $k=>$v) $keys[] = ['key' => $k];
+        foreach ($previews as $k => $v)
+            $keys[] = ['key' => $k];
 
         $config = ArrayHelper::merge([
-            'options'=>[
+            'options' => [
                 'accept' => 'image/*'
             ],
             'pluginOptions' => [
@@ -34,7 +35,7 @@ class FileInputWidget extends \kartik\widgets\FileInput
                 'showUpload' => false,
                 'showCancel' => false,
                 'showClose' => false,
-                'deleteUrl' => Url::to(['delete-image']),
+                'deleteUrl' => Url::to(['delete-file']),
             ]
         ], $config);
 

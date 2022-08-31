@@ -1,13 +1,14 @@
 <?php
 
-namespace ivankff\yii2UploadImages;
+namespace ivankff\yii2UploadImages\actions;
 
+use Yii;
 use yii\base\Action;
 use yii\web\Response;
 
 /**
  */
-class DeleteImageAction extends Action
+class DeleteFileAction extends Action
 {
 
     /**
@@ -15,7 +16,7 @@ class DeleteImageAction extends Action
      */
     public function run()
     {
-        \Yii::$app->response->format = Response::FORMAT_JSON;
+        Yii::$app->response->format = Response::FORMAT_JSON;
         return [];
     }
 
