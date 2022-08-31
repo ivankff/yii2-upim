@@ -219,7 +219,7 @@ class UploadBehavior extends Behavior
         $this->owner->ensureBehaviors();
 
         if ($this->owner instanceof ActiveRecord) {
-            $filesComponent = $this->{$this->attributeName};
+            $filesComponent = $this->owner->{$this->attributeName};
 
             if (! $this->owner->isNewRecord)
                 $filesComponent->load($this->owner->primaryKey);
