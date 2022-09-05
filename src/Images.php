@@ -43,8 +43,14 @@ class Images extends Files
         Assertion::notBlank($id);
 
         $result = true;
-        $oldImages = $this->_load($id, 100);
-        $toDelete = array_diff($oldImages, $this->_files);
+        $oldFiles = $this->_load($id, 100);
+
+        $filesToDiff = [];
+        foreach ($this->_files as $i => $file)
+            if (is_string($file))
+                $filesToDiff[$i] = $file;
+
+        $toDelete = array_diff($oldFiles, $filesToDiff);
 
         foreach ($toDelete as $file) {
             if (file_exists($file)) {
@@ -66,7 +72,7 @@ class Images extends Files
                 if ('jpeg' === $ext) $ext = 'jpg';
                 $newFile = $this->_getFilePath($id, $i, $ext);
 
-                if (! in_array($file, $oldImages)) {
+                if (! in_array($file, $oldFiles)) {
                     if (! empty($this->widen)) {
                         if ($image->width > $this->widen || $image->height > $this->widen) {
                             $image->resize($this->widen, $this->widen);
