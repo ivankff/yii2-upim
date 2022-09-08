@@ -65,6 +65,9 @@ class Images extends Files
 
         foreach ($this->_files as $i => $file) {
             try {
+                if (is_array($file))
+                    $file = $file[0];
+
                 /** @var Kohana_Image_GD $image */
                 $image = Yii::$app->get($this->imageComponent)->load($file);
 
