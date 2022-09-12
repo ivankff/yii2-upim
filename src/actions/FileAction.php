@@ -2,11 +2,11 @@
 
 namespace ivankff\yii2UploadImages\actions;
 
-use ivankff\yii2UploadImages\events\ActionFileEvent;
 use Yii;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
+use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
@@ -111,7 +111,7 @@ class FileAction extends Action
     {
         if (null === $this->_params) {
             $this->_params = new FileActionRequest();
-            $this->_params->load(Yii::$app->request->get(), "");
+            $this->_params->load(ArrayHelper::filter(Yii::$app->request->get(), $this->_params->safeAttributes()), "");
 
             if (! $this->_params->validate())
                 throw new BadRequestHttpException("Invalid request");

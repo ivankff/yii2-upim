@@ -7,6 +7,7 @@ use Yii;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
+use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\image\drivers\Image;
 use yii\image\drivers\Image_GD;
@@ -116,7 +117,7 @@ class ImageAction extends Action
         if (null === $this->_params) {
             $this->_params = new ImageActionRequest();
 
-            if (! ($this->_params->load(Yii::$app->request->get(), '') && $this->_params->validate()))
+            if (! ($this->_params->load(ArrayHelper::filter(Yii::$app->request->get(), $this->_params->safeAttributes()), '') && $this->_params->validate()))
                 throw new BadRequestHttpException("Invalid request");
 
             if ($this->checkHash && ! $this->_params->checkHash())

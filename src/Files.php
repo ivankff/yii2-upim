@@ -266,7 +266,7 @@ class Files extends BaseObject implements FilesInterface
         $this->_keepOriginal = $keepOriginal;
 
         if (empty($this->_files)) $this->_files = [];
-        $this->_files += $files;
+        $this->_files = array_merge(array_values($this->_files), array_values($files));
         $this->_trim();
 
         return true;
