@@ -25,7 +25,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
     /**
      * @var string[] возможные расширения для поиска файлов в папке
      */
-    public $extensions = ['jpg', 'png', 'jpeg', 'gif'];
+    public $extensions = ['jpg', 'png', 'jpeg', 'gif', 'webp'];
 
     /** @var array */
     private $_images = [];
@@ -199,6 +199,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
 
             foreach ($ftmp as $tmp => $file) {
                 rename($tmp, $file);
+                touch($file);
             }
 
         }
@@ -296,7 +297,7 @@ abstract class BaseImages extends BaseObject implements ImagesInterface
         $this->_keepOriginal = $keepOriginal;
 
         if (empty($this->_images[$type])) $this->_images[$type] = [];
-        $this->_images[$type] += $files;
+        $this->_images[$type] = array_merge(array_values($this->_images[$type]), array_values($files));
         $this->_slice($type);
 
         return true;

@@ -63,7 +63,7 @@ class PluralImages extends BaseImages
     {
         return [
             self::TYPE_MAIN => ['max' => 1, 'widen' => $this->widen],
-            self::TYPE_DOP => ['max' => 10, 'widen' => $this->widen],
+            self::TYPE_DOP => ['max' => 15, 'widen' => $this->widen],
         ];
     }
 
