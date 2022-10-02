@@ -57,7 +57,6 @@ class UploadBehavior extends Behavior
     {
         return [
             ActiveRecord::EVENT_AFTER_FIND => 'afterFind',
-            Model::EVENT_BEFORE_VALIDATE => 'beforeValidate',
             Model::EVENT_AFTER_VALIDATE => 'afterValidate',
         ];
     }
@@ -69,14 +68,6 @@ class UploadBehavior extends Behavior
     {
         parent::attach($owner);
         $this->_fillFiles();
-    }
-
-    /**
-     * @param ModelEvent $event
-     */
-    public function beforeValidate($event)
-    {
-        $this->owner->{$this->formAttribute} = UploadedFile::getInstances($this->owner, $this->formAttribute);
     }
 
     /**
@@ -94,11 +85,12 @@ class UploadBehavior extends Behavior
     public function afterValidate($event)
     {
         $keys = StringHelper::explode($this->owner->{"{$this->formAttribute}_keys"}, ',', true, true);
+        $uploadedFiles = UploadedFile::getInstances($this->owner, $this->formAttribute);
 
-        if ($this->owner->{$this->formAttribute} instanceof UploadedFile)
-            $this->owner->{$this->formAttribute} = [$this->owner->{$this->formAttribute}];
+        if ($uploadedFiles instanceof UploadedFile)
+            $uploadedFiles = [$uploadedFiles];
 
-        foreach ($this->owner->{$this->formAttribute} as $tmpFile) {
+        foreach ($uploadedFiles as $tmpFile) {
             $key = max(array_keys($this->_files) + [0]) + 1;
             $this->_files[$key] = [$tmpFile->tempName, $tmpFile->name];
             $keys[] = $key;
@@ -135,7 +127,11 @@ class UploadBehavior extends Behavior
             if (null === $this->_files)
                 throw new InvalidCallException('Method can be called after validate()');
 
-            return $this->_files;
+            $files = [];
+            foreach ($this->_files as $i => $file)
+                $files[$i] = is_array($file) ? $file[0] : $file;
+
+            return $files;
         }
 
         return parent::__get($name);
