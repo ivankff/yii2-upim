@@ -15,6 +15,7 @@ class ImageActionRequest extends Model
 
     public $id;
     public $i;
+    public $t;
 
     /* PhpThumb parameters */
     public $w;
@@ -32,7 +33,7 @@ class ImageActionRequest extends Model
             [['i', 'w', 'h'], 'integer', 'min' => 1],
             [['f'], 'in', 'range' => ['png', 'jpg', 'jpeg', 'gif', 'webp']],
             [['zc'], 'boolean'],
-            [['id', 'hash'], 'string'],
+            [['id', 'hash', 't'], 'string'],
         ];
     }
 
@@ -51,19 +52,17 @@ class ImageActionRequest extends Model
      */
     public function getCacheFilename($filePath)
     {
-        $params = ArrayHelper::toArray($this);
-
         if (!is_file($filePath))
             return null;
 
+        $params = $this->_toArray();
         $params['filemtime'] = filemtime($filePath);
-        $aFileInfo = pathinfo($filePath);
 
         $cache = \Yii::$app->get('cache', false);
-        if (! $cache instanceof CacheInterface)
+        if (!$cache instanceof CacheInterface)
             $cache = new DummyCache();
 
-        return "{$cache->buildKey($params)}.{$aFileInfo['extension']}";
+        return "{$cache->buildKey($params)}." . pathinfo($filePath, PATHINFO_EXTENSION);
     }
 
     /**
@@ -72,19 +71,10 @@ class ImageActionRequest extends Model
      */
     public function getRequestParams($excludeParams = [])
     {
-        if (! ArrayHelper::isIn('hash', $excludeParams))
+        if (!ArrayHelper::isIn('hash', $excludeParams))
             $this->hash = $this->_getHash();
 
-        $params = ArrayHelper::toArray($this);
-        ArrayHelper::removeValue($params, null);
-
-        foreach ($excludeParams as $param)
-            ArrayHelper::remove($params, $param);
-
-        foreach ($params as &$param)
-            $param = (string) $param;
-
-        return $params;
+        return $this->_toArray($excludeParams);
     }
 
     /**
@@ -92,19 +82,32 @@ class ImageActionRequest extends Model
      */
     private function _getHash()
     {
-        $params = ArrayHelper::toArray($this);
-        ArrayHelper::remove($params, 'hash');
-
-        foreach ($params as &$param)
-            $param = (string) $param;
-
+        $params = $this->_toArray();
         $params['securityKey'] = ArrayHelper::getValue(\Yii::$app->params, 'images.securityKey');
 
         $cache = \Yii::$app->get('cache', false);
-        if (! $cache instanceof CacheInterface)
+        if (!$cache instanceof CacheInterface)
             $cache = new DummyCache();
 
         return $cache->buildKey($params);
+    }
+
+    /**
+     * @param string[] $except
+     * @param bool $removeNull
+     * @return array
+     */
+    private function _toArray($except = ['t', 'hash'], $removeNull = true)
+    {
+        $params = $this->getAttributes(null, $except);
+
+        if ($removeNull)
+            ArrayHelper::removeValue($params, null);
+
+        foreach ($params as &$param)
+            $param = (string)$param;
+
+        return $params;
     }
 
 }
