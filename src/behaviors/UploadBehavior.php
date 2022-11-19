@@ -127,11 +127,7 @@ class UploadBehavior extends Behavior
             if (null === $this->_files)
                 throw new InvalidCallException('Method can be called after validate()');
 
-            $files = [];
-            foreach ($this->_files as $i => $file)
-                $files[$i] = is_array($file) ? $file[0] : $file;
-
-            return $files;
+            return $this->_files;
         }
 
         return parent::__get($name);

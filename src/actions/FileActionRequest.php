@@ -12,6 +12,7 @@ class FileActionRequest extends Model
 
     public $id;
     public $i;
+    public $t;
 
     /**
      * {@inheritdoc}
@@ -20,7 +21,7 @@ class FileActionRequest extends Model
     {
         return [
             [['i'], 'integer', 'min' => 1],
-            [['id'], 'string'],
+            [['id', 't'], 'string'],
         ];
     }
 
