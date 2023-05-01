@@ -42,6 +42,9 @@ class ImageActionRequest extends Model
         ];
     }
 
+    /** @return int */
+    public function getI() { return (string)$this->i === "" ? 1 : (int)$this->i; }
+
     /** @return bool */
     public function checkHash() { return $this->hash === $this->_getHash(); }
 

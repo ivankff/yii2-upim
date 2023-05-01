@@ -155,7 +155,7 @@ class ImageAction extends Action
                 'widen' => $this->widen,
             ]);
             $images->load($params->id);
-            $this->_filePath = $images->get($params->type, $params->i);
+            $this->_filePath = $images->get($params->type, $params->getI());
 
             if (! $this->_filePath)
                 throw new NotFoundHttpException("Image not found");
