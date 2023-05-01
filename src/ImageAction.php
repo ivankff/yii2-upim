@@ -175,19 +175,13 @@ class ImageAction extends Action
     {
         \Yii::$app->response->format = Response::FORMAT_RAW;
 
-        if ($this->cacheExpire) {
-            \Yii::$app->response->headers->set('Cache-control', 'public');
-            \Yii::$app->response->headers->set('Expires', gmdate("D, d M Y H:i:s", time() + $this->cacheExpire) . " GMT");
-        }
-		
         if ($image instanceof Image) {
-            \Yii::$app->response->headers->set('Content-Type', $image->mime);
+            \Yii::$app->response->headers->add('Content-Type', $image->mime);
             return $image->render($params->f, $this->imageQuality);
         }
 
         $info = getimagesize($image);
-        \Yii::$app->response->headers->set('Content-Type', $info['mime']);
-        
+        \Yii::$app->response->headers->add('Content-Type', image_type_to_mime_type($info[2]));
         return file_get_contents($image);
     }
 
